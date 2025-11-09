@@ -12,8 +12,6 @@ const nextConfig = {
     USDC_CONTRACT_ADDRESS: process.env.USDC_CONTRACT_ADDRESS,
     ETHER_PRIVATE_KEY: process.env.ETHER_PRIVATE_KEY,
   },
-
-  output: 'standalone',
 };
 
 module.exports = nextConfig;
