@@ -304,7 +304,7 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
                     outerRadius={100}
                     paddingAngle={5}
                     dataKey="value"
-                    label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
+                    label={({ name, value, percent }: { name: string; value: number; percent: number }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
                     labelLine={true}
                     animationDuration={800}
                     animationBegin={0}
