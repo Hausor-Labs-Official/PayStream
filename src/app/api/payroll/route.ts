@@ -27,14 +27,11 @@ export async function POST(request: Request) {
     console.log(`📋 Found ${pendingEmployees.length} pending employees`);
 
     // Step 1.5: Calculate total payroll needed and check USDC balance
-    const estimatedTotalPayroll = pendingEmployees.reduce((sum, emp) => {
-      const annualSalary = emp.salary_usd || 52000;
-      const biweeklyPay = annualSalary / 26; // 26 pay periods per year
-      const estimatedNetPay = biweeklyPay * 0.75; // Rough estimate after taxes
-      return sum + estimatedNetPay;
-    }, 0);
+    // TESTING MODE: Cap total payroll at $5.00
+    const TOTAL_PAYROLL_CAP = 5.00;
+    const estimatedTotalPayroll = TOTAL_PAYROLL_CAP;
 
-    console.log(`💰 Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC`);
+    console.log(`💰 Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC (TEST MODE - CAPPED)`);
 
     // Import dynamically to avoid circular dependencies
     const { ExecutorAgent } = await import('@/lib/executor-agent');
@@ -72,27 +69,30 @@ export async function POST(request: Request) {
 
     console.log('\n💰 Calculating payroll...');
 
+    // TESTING MODE: Cap total payroll at $5.00
+    const TOTAL_PAYROLL_CAP = 5.00;
+    const payPerEmployee = TOTAL_PAYROLL_CAP / pendingEmployees.length;
+
+    console.log(`   🧪 TEST MODE: Total payroll capped at $${TOTAL_PAYROLL_CAP.toFixed(2)}`);
+    console.log(`   💵 Each employee will receive: $${payPerEmployee.toFixed(2)} USDC`);
+
     for (const employee of pendingEmployees) {
       try {
-        // Prepare input for payroll agent
-        const payrollInput: PayrollInput = {
-          employee_id: String(employee.id),
-          employee_name: employee.name,
-          salary_annual: employee.salary_usd || 52000, // Default to 52k if not set
-          hours_this_period: 80, // Biweekly default
-          pay_period: 'biweekly',
-        };
-
         console.log(`   Calculating for ${employee.name}...`);
 
-        // Calculate using AI (with manual fallback)
-        let payrollResult: PayrollResult;
-        try {
-          payrollResult = await payrollAgent.calculatePayroll(payrollInput);
-        } catch (aiError) {
-          console.warn(`   AI calculation failed, using manual: ${(aiError as Error).message}`);
-          payrollResult = payrollAgent.calculatePayrollManual(payrollInput);
-        }
+        // Create simplified payroll result with capped payment
+        const payrollResult: PayrollResult = {
+          employee_id: String(employee.id),
+          employee_name: employee.name,
+          base_pay: payPerEmployee,
+          hours_worked: 80,
+          ot_hours: 0,
+          ot_pay: 0,
+          gross_pay: payPerEmployee,
+          total_tax_estimated: 0,
+          net_pay: payPerEmployee,
+          pay_period: 'biweekly',
+        };
 
         payrollResults.push(payrollResult);
 
@@ -102,7 +102,7 @@ export async function POST(request: Request) {
             id: employee.id!,
             employee_id: String(employee.id),
             wallet_address: employee.wallet_address,
-            net_pay: payrollResult.net_pay,
+            net_pay: payPerEmployee,
           });
         } else {
           console.warn(`   ⚠️  Employee ${employee.name} has no wallet address`);
