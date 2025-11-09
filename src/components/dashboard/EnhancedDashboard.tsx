@@ -16,6 +16,7 @@ import {
 import { EmployeeDataTable } from '@/components/tables/EmployeeDataTable';
 import { InteractivePayrollChart } from '@/components/charts/InteractivePayrollChart';
 import AgentMonitor from '@/components/agents/AgentMonitor';
+import EmployeeEditDialog from '@/components/employees/EmployeeEditDialog';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import {
   DollarSign,
@@ -38,6 +39,7 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [showAgentMonitor, setShowAgentMonitor] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
   const stats = useMemo(() => {
     const total = employees.length;
@@ -134,6 +136,13 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
     } catch (error) {
       console.error('Failed to refresh employees:', error);
     }
+  };
+
+  const handleEmployeeSave = (updatedEmployee: Employee) => {
+    setEmployees(prev =>
+      prev.map(emp => (emp.id === updatedEmployee.id ? updatedEmployee : emp))
+    );
+    setEditingEmployee(null);
   };
 
   const handleCSVUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -445,6 +454,14 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
         onClose={handleAgentMonitorClose}
         processType="payroll"
         executeReal={true}
+      />
+
+      {/* Employee Edit Dialog */}
+      <EmployeeEditDialog
+        employee={editingEmployee}
+        isOpen={editingEmployee !== null}
+        onClose={() => setEditingEmployee(null)}
+        onSave={handleEmployeeSave}
       />
     </div>
   );
