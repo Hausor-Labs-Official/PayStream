@@ -32,7 +32,17 @@ export async function GET() {
       .order('created_at', { ascending: false })
       .limit(50);
 
-    const activities = [];
+    interface Activity {
+      id: string;
+      agent: string;
+      action: string;
+      status: string;
+      duration: number;
+      timestamp: string;
+      details: string;
+    }
+
+    const activities: Activity[] = [];
 
     // Process employee activities (Onboarding Agent)
     if (employees && !empError) {
