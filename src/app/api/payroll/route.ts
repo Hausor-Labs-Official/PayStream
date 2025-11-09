@@ -26,6 +26,45 @@ export async function POST(request: Request) {
 
     console.log(`📋 Found ${pendingEmployees.length} pending employees`);
 
+    // Step 1.5: Calculate total payroll needed and check USDC balance
+    const estimatedTotalPayroll = pendingEmployees.reduce((sum, emp) => {
+      const annualSalary = emp.salary_usd || 52000;
+      const biweeklyPay = annualSalary / 26; // 26 pay periods per year
+      const estimatedNetPay = biweeklyPay * 0.75; // Rough estimate after taxes
+      return sum + estimatedNetPay;
+    }, 0);
+
+    console.log(`💰 Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC`);
+
+    // Import dynamically to avoid circular dependencies
+    const { ExecutorAgent } = await import('@/lib/executor-agent');
+    const executorAgent = new ExecutorAgent();
+
+    try {
+      const usdcBalance = await executorAgent.getUSDCBalance();
+      console.log(`💵 Current USDC balance: $${usdcBalance.toFixed(2)}`);
+
+      if (usdcBalance < estimatedTotalPayroll) {
+        const shortfall = estimatedTotalPayroll - usdcBalance;
+        return NextResponse.json({
+          success: false,
+          error: 'INSUFFICIENT_BALANCE',
+          message: `Insufficient USDC balance. Need $${estimatedTotalPayroll.toFixed(2)}, have $${usdcBalance.toFixed(2)}. Shortfall: $${shortfall.toFixed(2)}`,
+          details: {
+            required: estimatedTotalPayroll,
+            available: usdcBalance,
+            shortfall: shortfall,
+            employeeCount: pendingEmployees.length,
+          }
+        }, { status: 400 });
+      }
+
+      console.log(`✓ USDC balance sufficient for payroll`);
+    } catch (balanceError) {
+      console.warn(`⚠️  Could not verify USDC balance: ${(balanceError as Error).message}`);
+      // Continue processing but log the warning
+    }
+
     // Step 2: Calculate payroll for each employee using AI
     const payrollAgent = new PayrollAgent();
     const payrollResults: PayrollResult[] = [];

@@ -1,18 +1,26 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Mic, Send, MicOff, Sparkles } from 'lucide-react';
+import { X, Mic, Send, MicOff, Sparkles, Paperclip, Image as ImageIcon, FileText } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import PennyOrb from './PennyOrb';
 import PennyThinking from './PennyThinking';
 import AgentMonitor from '../agents/AgentMonitor';
 
+interface MessageAttachment {
+  type: 'image' | 'file';
+  name: string;
+  url: string;
+  mimeType: string;
+}
+
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  attachments?: MessageAttachment[];
 }
 
 interface PennyPanelProps {
@@ -36,8 +44,10 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showAgentMonitor, setShowAgentMonitor] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     transcript,
@@ -77,22 +87,69 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     return payrollCommands.some(cmd => lowerText.includes(cmd));
   };
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const newAttachments: MessageAttachment[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Convert file to base64 data URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+
+        const attachment: MessageAttachment = {
+          type: file.type.startsWith('image/') ? 'image' : 'file',
+          name: file.name,
+          url: result,
+          mimeType: file.type,
+        };
+
+        newAttachments.push(attachment);
+
+        // Update attachments when all files are processed
+        if (newAttachments.length === files.length) {
+          setAttachments(prev => [...prev, ...newAttachments]);
+        }
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setAttachments(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSend = async () => {
     const messageText = input.trim();
-    if (!messageText || isLoading) return;
+    if ((!messageText && attachments.length === 0) || isLoading) return;
 
     setShowSuggestions(false);
 
     const userMessage: Message = {
       id: Date.now().toString(),
       role: 'user',
-      content: messageText,
+      content: messageText || '(Sent files)',
       timestamp: new Date(),
+      attachments: attachments.length > 0 ? [...attachments] : undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     resetTranscript();
+
+    // Clear attachments after sending
+    const currentAttachments = [...attachments];
+    setAttachments([]);
 
     // Check if this is an agent command
     if (detectAgentCommand(messageText)) {
@@ -121,6 +178,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           prompt: messageText,
           userId: user?.id,
           userEmail: user?.primaryEmailAddress?.emailAddress,
+          attachments: currentAttachments,
         }),
       });
 
@@ -250,6 +308,29 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                   : 'bg-[#F3F4F6] text-black rounded-tl-sm'
               }`}
             >
+              {/* Attachments */}
+              {message.attachments && message.attachments.length > 0 && (
+                <div className="mb-2 space-y-2">
+                  {message.attachments.map((attachment, idx) => (
+                    <div key={idx} className="rounded-lg overflow-hidden">
+                      {attachment.type === 'image' ? (
+                        <img
+                          src={attachment.url}
+                          alt={attachment.name}
+                          className="max-w-full max-h-64 rounded-lg"
+                        />
+                      ) : (
+                        <div className={`flex items-center gap-2 p-2 rounded-lg ${
+                          message.role === 'user' ? 'bg-blue-600' : 'bg-gray-200'
+                        }`}>
+                          <FileText className="w-4 h-4" />
+                          <span className="text-xs font-medium truncate">{attachment.name}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               <p className="text-sm whitespace-pre-wrap">{message.content}</p>
               <p className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-100' : 'text-[#737E9C]'}`}>
                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -269,7 +350,61 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       {/* Input */}
       <div className="border-t border-gray-200 p-4 bg-white">
+        {/* Attachment Preview */}
+        {attachments.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-2">
+            {attachments.map((attachment, index) => (
+              <div key={index} className="relative group">
+                {attachment.type === 'image' ? (
+                  <div className="relative">
+                    <img
+                      src={attachment.url}
+                      alt={attachment.name}
+                      className="w-16 h-16 object-cover rounded-lg border-2 border-blue-200"
+                    />
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative px-3 py-2 bg-blue-50 border-2 border-blue-200 rounded-lg flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs font-medium text-blue-700 max-w-[100px] truncate">
+                      {attachment.name}
+                    </span>
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3 text-red-500" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
         <div className="flex gap-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors text-[#737E9C]"
+            aria-label="Attach file"
+            disabled={isLoading}
+          >
+            <Paperclip className="w-5 h-5" />
+          </button>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -297,7 +432,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           )}
           <button
             onClick={handleSend}
-            disabled={!input.trim() || isLoading}
+            disabled={(!input.trim() && attachments.length === 0) || isLoading}
             className="w-12 h-12 bg-[#0044FF] rounded-xl flex items-center justify-center hover:bg-[#0033CC] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Send message"
           >

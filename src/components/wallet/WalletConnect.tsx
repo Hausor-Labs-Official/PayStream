@@ -129,7 +129,7 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
         });
       } catch (switchError: any) {
         // Chain doesn't exist, try to add it
-        if (switchError.code === 4902) {
+        if (switchError.code === 4902 || switchError.code === -32603) {
           try {
             await window.ethereum.request({
               method: 'wallet_addEthereumChain',
@@ -148,9 +148,10 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
               ],
             });
           } catch (addError) {
-            console.error('Error adding Arc Testnet:', addError);
+            // Silently handle chain add errors as they're not critical
           }
         }
+        // Silently handle switch errors as they're not critical for wallet connection
       }
 
       setShowModal(true);
