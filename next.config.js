@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Disable Turbopack for production builds
-  turbo: undefined,
-
   env: {
     CIRCLE_API_KEY: process.env.CIRCLE_API_KEY,
     CIRCLE_ENTITY_ID: process.env.CIRCLE_ENTITY_ID,
@@ -16,10 +13,6 @@ const nextConfig = {
     ETHER_PRIVATE_KEY: process.env.ETHER_PRIVATE_KEY,
   },
 
-  // Optimize for production
-  swcMinify: true,
-
-  // Ensure proper output for Vercel
   output: 'standalone',
 };
 
