@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { UserPlus, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import AgentProcessModal from '@/components/agents/AgentProcessModal';
+import { generateWalletAddress } from '@/lib/wallet-utils';
 
 interface AddEmployeeDialogProps {
   onSuccess: () => void;
@@ -123,8 +124,8 @@ export default function AddEmployeeDialog({ onSuccess }: AddEmployeeDialogProps)
       updateStepStatus('wallet', 'processing');
       await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Here you would call your wallet creation API
-      const walletAddress = formData.walletAddress || '0x' + Math.random().toString(16).substr(2, 40);
+      // Generate a proper Ethereum wallet address if not provided
+      const walletAddress = formData.walletAddress || generateWalletAddress();
       updateStepStatus('wallet', 'completed');
 
       // Step 3: Add to database
@@ -155,12 +156,35 @@ export default function AddEmployeeDialog({ onSuccess }: AddEmployeeDialogProps)
 
       // Step 4: Send email
       updateStepStatus('email', 'processing');
-      await new Promise(resolve => setTimeout(resolve, 1500));
 
-      // Here you would call your email API
-      // await fetch('/api/send-employee-credentials', { ... })
+      try {
+        const emailResponse = await fetch('/api/send-employee-credentials', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: formData.name.trim(),
+            email: formData.email.trim().toLowerCase(),
+            walletAddress: walletAddress,
+          }),
+        });
 
-      updateStepStatus('email', 'completed');
+        const emailData = await emailResponse.json();
+
+        if (!emailResponse.ok || !emailData.success) {
+          console.warn('Failed to send welcome email:', emailData.error);
+          // Don't fail the entire process if email fails
+        } else {
+          console.log('✅ Welcome email sent successfully');
+        }
+
+        updateStepStatus('email', 'completed');
+      } catch (emailError) {
+        console.error('Error sending welcome email:', emailError);
+        // Still mark as completed since the employee was created
+        updateStepStatus('email', 'completed');
+      }
 
       // Success - reset form
       setFormData({

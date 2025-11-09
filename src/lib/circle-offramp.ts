@@ -94,8 +94,8 @@ export async function createPlaidLinkToken(employeeId: string): Promise<string> 
   const response = await plaidClient.linkTokenCreate({
     user: { client_user_id: employeeId },
     client_name: 'Paystream AI',
-    products: ['auth'],
-    country_codes: ['US'],
+    products: ['auth' as any],
+    country_codes: ['US' as any],
     language: 'en',
   });
 

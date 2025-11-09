@@ -27,11 +27,11 @@ export async function POST(request: Request) {
     console.log(`📋 Found ${pendingEmployees.length} pending employees`);
 
     // Step 1.5: Calculate total payroll needed and check USDC balance
-    // TESTING MODE: Cap total payroll at $5.00
-    const TOTAL_PAYROLL_CAP = 5.00;
-    const estimatedTotalPayroll = TOTAL_PAYROLL_CAP;
+    // Fixed payroll: 1.0 USDC per employee
+    const FIXED_PAY_PER_EMPLOYEE = 1.0;
+    const estimatedTotalPayroll = pendingEmployees.length * FIXED_PAY_PER_EMPLOYEE;
 
-    console.log(`💰 Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC (TEST MODE - CAPPED)`);
+    console.log(`💰 Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC`);
 
     // Import dynamically to avoid circular dependencies
     const { ExecutorAgent } = await import('@/lib/executor-agent');
@@ -69,28 +69,32 @@ export async function POST(request: Request) {
 
     console.log('\n💰 Calculating payroll...');
 
-    // TESTING MODE: Cap total payroll at $5.00
-    const TOTAL_PAYROLL_CAP = 5.00;
-    const payPerEmployee = TOTAL_PAYROLL_CAP / pendingEmployees.length;
-
-    console.log(`   🧪 TEST MODE: Total payroll capped at $${TOTAL_PAYROLL_CAP.toFixed(2)}`);
-    console.log(`   💵 Each employee will receive: $${payPerEmployee.toFixed(2)} USDC`);
-
     for (const employee of pendingEmployees) {
       try {
         console.log(`   Calculating for ${employee.name}...`);
 
-        // Create simplified payroll result with capped payment
+        // Fixed pay: 0.9 USDC per employee
+        const basePay = FIXED_PAY_PER_EMPLOYEE;
+        const hoursWorked = 80; // Standard biweekly hours
+        const overtimeHours = 0;
+        const overtimePay = 0;
+        const grossPay = basePay + overtimePay;
+        const estimatedTax = 0; // No tax for fixed payment
+        const netPay = grossPay;
+
+        console.log(`   💵 ${employee.name}: $${netPay.toFixed(2)} USDC (fixed payment)`);
+
+        // Create payroll result with fixed payment amounts
         const payrollResult: PayrollResult = {
           employee_id: String(employee.id),
           employee_name: employee.name,
-          base_pay: payPerEmployee,
-          hours_worked: 80,
-          ot_hours: 0,
-          ot_pay: 0,
-          gross_pay: payPerEmployee,
-          total_tax_estimated: 0,
-          net_pay: payPerEmployee,
+          base_pay: basePay,
+          hours_worked: hoursWorked,
+          ot_hours: overtimeHours,
+          ot_pay: overtimePay,
+          gross_pay: grossPay,
+          total_tax_estimated: estimatedTax,
+          net_pay: netPay,
           pay_period: 'biweekly',
         };
 
@@ -102,7 +106,7 @@ export async function POST(request: Request) {
             id: employee.id!,
             employee_id: String(employee.id),
             wallet_address: employee.wallet_address,
-            net_pay: payPerEmployee,
+            net_pay: netPay,
           });
         } else {
           console.warn(`   ⚠️  Employee ${employee.name} has no wallet address`);
@@ -128,6 +132,36 @@ export async function POST(request: Request) {
     const paymentResult = await executeBatchPay(batchPaymentEmployees);
 
     console.log(`   ✓ Payment successful!`);
+
+    // Step 3.5: Create payment records in database
+    console.log(`\n💾 Creating payment records...`);
+
+    const { getSupabaseClient } = await import('@/lib/supabase');
+    const supabase = getSupabaseClient();
+
+    for (const emp of batchPaymentEmployees) {
+      try {
+        const { error } = await supabase
+          .from('payments')
+          .insert({
+            employee_id: emp.employee_id,
+            amount: emp.net_pay,
+            currency: 'USDC',
+            status: 'confirmed',
+            tx_hash: paymentResult.txHash,
+            block_number: paymentResult.blockNumber,
+            gas_used: paymentResult.gasUsed,
+          });
+
+        if (error) {
+          console.error(`   ❌ Failed to create payment record for ${emp.employee_id}:`, error);
+        } else {
+          console.log(`   ✓ Payment record created for employee ID: ${emp.employee_id}`);
+        }
+      } catch (dbError) {
+        console.error(`   ❌ Database error for ${emp.employee_id}:`, dbError);
+      }
+    }
 
     // Step 4: Send email pay stubs
     console.log(`\n📧 Sending pay stubs...`);
@@ -186,17 +220,21 @@ async function sendPayStub(
   txHash: string,
   explorerUrl: string
 ): Promise<void> {
-  // Create email transporter (using console for testnet)
-  // In production, configure with real SMTP settings
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email', // Test email service
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'test@paystream.ai',
-      pass: 'test-password',
-    },
-  });
+  // Check if email is configured
+  const emailConfigured = process.env.EMAIL_HOST && process.env.EMAIL_USER && process.env.EMAIL_PASS;
+
+  // Create email transporter
+  const transporter = emailConfigured
+    ? nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: parseInt(process.env.EMAIL_PORT || '587'),
+        secure: process.env.EMAIL_PORT === '465',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      })
+    : null;
 
   const emailHtml = `
 <!DOCTYPE html>
@@ -278,22 +316,30 @@ async function sendPayStub(
 </html>
 `;
 
-  // For testnet, just log the email (don't actually send)
+  // Log email details
   console.log(`\n📧 Pay Stub Email for ${employee.email}:`);
   console.log(`   Subject: Your Paystream AI Pay Stub - $${payroll.net_pay.toFixed(2)} USDC`);
   console.log(`   Net Pay: $${payroll.net_pay.toFixed(2)}`);
   console.log(`   TX: ${txHash}`);
   console.log(`   Explorer: ${explorerUrl}`);
 
-  // In production, uncomment this to send real emails:
-  /*
-  await transporter.sendMail({
-    from: '"Paystream AI" <payroll@paystream.ai>',
-    to: employee.email,
-    subject: `Your Paystream AI Pay Stub - $${payroll.net_pay.toFixed(2)} USDC`,
-    html: emailHtml,
-  });
-  */
+  // Send email if configured
+  if (transporter && emailConfigured) {
+    try {
+      await transporter.sendMail({
+        from: process.env.EMAIL_FROM || '"Paystream AI" <payroll@paystream.ai>',
+        to: employee.email,
+        subject: `💰 Pay Stub - Paystream AI - $${payroll.net_pay.toFixed(2)} USDC`,
+        html: emailHtml,
+      });
+      console.log(`   ✅ Email sent successfully to ${employee.email}`);
+    } catch (error) {
+      console.error(`   ❌ Failed to send email:`, error);
+      throw error;
+    }
+  } else {
+    console.log(`   ⚠️  Email not configured - set EMAIL_HOST, EMAIL_USER, EMAIL_PASS in .env.local`);
+  }
 }
 
 /**

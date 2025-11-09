@@ -77,15 +77,18 @@ export class ExecutorAgent {
           throw new Error(`Employee ${emp.employee_id} has no wallet address`);
         }
 
-        if (!ethers.isAddress(emp.wallet_address)) {
-          throw new Error(`Invalid wallet address for ${emp.employee_id}: ${emp.wallet_address}`);
+        // Validate address (simple check)
+        if (!emp.wallet_address || !emp.wallet_address.match(/^0x[a-fA-F0-9]{40}$/)) {
+          throw new Error(`Invalid wallet address format for ${emp.employee_id}: ${emp.wallet_address}`);
         }
+
+        const normalizedAddress = emp.wallet_address.toLowerCase();
 
         if (emp.net_pay <= 0) {
           throw new Error(`Invalid payment amount for ${emp.employee_id}: ${emp.net_pay}`);
         }
 
-        addresses.push(emp.wallet_address);
+        addresses.push(normalizedAddress);
         // Convert to USDC wei (6 decimals)
         const amountWei = ethers.parseUnits(emp.net_pay.toFixed(6), 6);
         amounts.push(amountWei);
@@ -112,18 +115,50 @@ export class ExecutorAgent {
         );
       }
 
-      // Step 2: Execute batch payment with native USDC
+      // Step 2: Execute batch payment with native USDC (with retry logic)
       console.log(`\n💸 Executing batch payment...`);
       const totalAmountWei = ethers.parseUnits(totalAmount.toFixed(6), 6);
 
-      const batchTx = await this.batchPayerContract.batchPay(addresses, amounts, {
-        value: totalAmountWei, // Send native USDC with the transaction
-        gasLimit: 500000 + employees.length * 100000, // Dynamic gas limit
-      });
+      let batchTx;
+      let retryCount = 0;
+      const maxRetries = 3;
 
-      console.log(`   Transaction: ${batchTx.hash}`);
+      while (retryCount < maxRetries) {
+        try {
+          // Get fresh nonce for each attempt
+          const nonce = await provider.getTransactionCount(this.signer.address, 'pending');
+          console.log(`   Attempt ${retryCount + 1}/${maxRetries} - Using nonce: ${nonce}`);
+
+          batchTx = await this.batchPayerContract.batchPay(addresses, amounts, {
+            value: totalAmountWei, // Send native USDC with the transaction
+            gasLimit: 500000 + employees.length * 100000, // Dynamic gas limit
+            nonce: nonce, // Explicitly set nonce
+          });
+
+          console.log(`   Transaction: ${batchTx.hash}`);
+          break; // Success, exit retry loop
+        } catch (error: any) {
+          retryCount++;
+          const errorMsg = error.message?.toLowerCase() || '';
+
+          // Check if it's a rate limit or nonce error
+          if (errorMsg.includes('rate limit') || errorMsg.includes('request limit')) {
+            console.log(`   ⚠️  Rate limit hit, waiting 2 seconds...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          } else if (errorMsg.includes('nonce') || errorMsg.includes('already been used')) {
+            console.log(`   ⚠️  Nonce error, retrying with fresh nonce...`);
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          } else if (retryCount >= maxRetries) {
+            throw error; // Re-throw if max retries reached and not a known error
+          }
+        }
+      }
+
+      if (!batchTx) {
+        throw new Error('Failed to submit transaction after multiple retries');
+      }
+
       console.log(`   ⏳ Waiting for confirmation...`);
-
       const receipt = await batchTx.wait();
 
       console.log(`   ✅ Payment confirmed!`);
@@ -170,8 +205,14 @@ export class ExecutorAgent {
    * @returns Balance in USDC
    */
   async getUSDCBalance(): Promise<number> {
-    const balance = await this.usdcContract.balanceOf(this.signer.address);
-    return parseFloat(ethers.formatUnits(balance, 6));
+    // Arc uses native USDC, not ERC-20
+    const provider = this.signer.provider;
+    if (!provider) {
+      throw new Error('Provider not available from signer');
+    }
+    const balance = await provider.getBalance(this.signer.address);
+    // Native USDC uses 18 decimals on Arc (like ETH)
+    return parseFloat(ethers.formatEther(balance));
   }
 
   /**

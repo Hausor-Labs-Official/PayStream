@@ -353,7 +353,7 @@ export default function WalletPage() {
                     <TableCell>
                       {tx.hash ? (
                         <a
-                          href={`https://testnet.arcscan.com/tx/${tx.hash}`}
+                          href={`https://testnet.arcscan.app/tx/${tx.hash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1 text-[#0044FF] hover:underline text-sm"

@@ -31,40 +31,46 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Fetch payroll transactions by looking at employee status changes
-    const { data: employees, error: empError } = await supabase
-      .from('employees')
-      .select('*')
-      .eq('pay_status', 'paid')
-      .order('updated_at', { ascending: false })
-      .limit(10);
+    // Fetch actual payment transactions from payments table
+    const { data: payments, error: paymentsError } = await supabase
+      .from('payments')
+      .select('*, employees(name, email)')
+      .order('created_at', { ascending: false })
+      .limit(50);
 
-    if (!empError && employees) {
-      // Group by update time to simulate payroll runs
-      const payrollRuns: any = {};
-      employees.forEach((emp: any) => {
-        const dateKey = new Date(emp.updated_at).toISOString().split('T')[0];
-        if (!payrollRuns[dateKey]) {
-          payrollRuns[dateKey] = {
-            employees: [],
+    if (!paymentsError && payments) {
+      // Group payments by transaction hash to show batch payments as one entry
+      const paymentsByTxHash: any = {};
+
+      payments.forEach((payment: any) => {
+        const txHash = payment.tx_hash;
+        if (!paymentsByTxHash[txHash]) {
+          paymentsByTxHash[txHash] = {
+            payments: [],
             totalAmount: 0,
-            timestamp: emp.updated_at,
+            timestamp: payment.created_at,
+            status: payment.status,
+            blockNumber: payment.block_number,
+            gasUsed: payment.gas_used,
           };
         }
-        payrollRuns[dateKey].employees.push(emp);
-        payrollRuns[dateKey].totalAmount += emp.salary_annual / 12; // Monthly salary
+        paymentsByTxHash[txHash].payments.push(payment);
+        paymentsByTxHash[txHash].totalAmount += parseFloat(payment.amount);
       });
 
-      Object.keys(payrollRuns).forEach((dateKey, index) => {
-        const run = payrollRuns[dateKey];
+      // Add grouped payments as transactions
+      Object.keys(paymentsByTxHash).forEach((txHash) => {
+        const group = paymentsByTxHash[txHash];
+        const employeeNames = group.payments.map((p: any) => p.employees?.name || 'Unknown').join(', ');
+
         transactions.push({
-          id: `payroll-${dateKey}`,
+          id: txHash || `payment-${group.timestamp}`,
           type: 'payroll',
-          amount: -run.totalAmount, // Negative because it's outgoing
-          status: 'completed',
-          timestamp: run.timestamp,
-          hash: undefined,
-          description: `Payroll run - ${run.employees.length} employee${run.employees.length > 1 ? 's' : ''}`,
+          amount: -group.totalAmount, // Negative because it's outgoing
+          status: group.status === 'confirmed' ? 'completed' : group.status,
+          timestamp: group.timestamp,
+          hash: txHash,
+          description: `Payroll payment - ${group.payments.length} employee${group.payments.length > 1 ? 's' : ''} (${group.totalAmount.toFixed(2)} USDC)`,
         });
       });
     }

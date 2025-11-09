@@ -396,8 +396,8 @@ Be conversational, provide context, and when appropriate, suggest related action
           {
             label,
             data,
-            backgroundColor: isPieType ? CHART_COLORS.background : CHART_COLORS.background[0],
-            borderColor: isPieType ? CHART_COLORS.border : CHART_COLORS.border[0],
+            backgroundColor: isPieType ? CHART_COLORS.background : [CHART_COLORS.background[0]],
+            borderColor: isPieType ? CHART_COLORS.border : [CHART_COLORS.border[0]],
             borderWidth: 2,
           },
         ],

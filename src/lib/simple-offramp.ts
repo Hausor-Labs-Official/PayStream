@@ -97,7 +97,7 @@ export async function transferToExternalWallet(
   });
 
   // 8. Return result
-  const explorerUrl = `https://testnet.arcscan.com/tx/${tx.hash}`;
+  const explorerUrl = `https://testnet.arcscan.app/tx/${tx.hash}`;
 
   return {
     transactionHash: tx.hash,

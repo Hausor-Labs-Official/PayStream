@@ -183,7 +183,7 @@ function TransactionDetailViewer({ transaction }: { transaction: TransactionData
                     variant="link"
                     size="sm"
                     className="mt-2 p-0 h-auto"
-                    onClick={() => window.open(`https://testnet.arcscan.com/tx/${transaction.transaction_hash}`, '_blank')}
+                    onClick={() => window.open(`https://testnet.arcscan.app/tx/${transaction.transaction_hash}`, '_blank')}
                   >
                     View on Explorer <IconExternalLink className="size-3 ml-1" />
                   </Button>
@@ -581,7 +581,7 @@ export function TransactionDataTable({
                   value={`${table.getState().pagination.pageSize}`}
                   onValueChange={(value) => table.setPageSize(Number(value))}
                 >
-                  <SelectTrigger size="sm" className="w-20" id="rows-per-page">
+                  <SelectTrigger className="w-20 h-8" id="rows-per-page">
                     <SelectValue
                       placeholder={table.getState().pagination.pageSize}
                     />

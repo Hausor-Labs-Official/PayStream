@@ -8,11 +8,12 @@ export async function GET(request: NextRequest) {
     // Fetch employees
     const employees = await getAllEmployees();
 
-    // Fetch all transactions
-    const [offrampRes, externalRes, onrampRes] = await Promise.all([
+    // Fetch all transactions including payments
+    const [offrampRes, externalRes, onrampRes, paymentsRes] = await Promise.all([
       supabase.from('offramp_transactions').select('*').order('created_at', { ascending: false }),
       supabase.from('external_transfers').select('*').order('created_at', { ascending: false }),
       supabase.from('onramp_transactions').select('*').order('created_at', { ascending: false }),
+      supabase.from('payments').select('*').order('created_at', { ascending: false }),
     ]);
 
     // Calculate employee stats
@@ -26,6 +27,7 @@ export async function GET(request: NextRequest) {
       ...(offrampRes.data || []),
       ...(externalRes.data || []),
       ...(onrampRes.data || []),
+      ...(paymentsRes.data || []),
     ];
 
     const totalTransactions = allTransactions.length;
@@ -34,56 +36,62 @@ export async function GET(request: NextRequest) {
       return sum + amount;
     }, 0);
 
-    // Generate payroll time series data from employee creation dates
+    // Generate payroll time series data from actual payments
     const payrollData = [];
     const now = new Date();
     const startDate = new Date();
     startDate.setMonth(startDate.getMonth() - 6);
 
+    // Group payments by date
+    const paymentsByDate: { [key: string]: { amount: number; count: number } } = {};
+
+    (paymentsRes.data || []).forEach((payment: any) => {
+      const dateStr = new Date(payment.created_at).toISOString().split('T')[0];
+      if (!paymentsByDate[dateStr]) {
+        paymentsByDate[dateStr] = { amount: 0, count: 0 };
+      }
+      paymentsByDate[dateStr].amount += parseFloat(payment.amount || 0);
+      paymentsByDate[dateStr].count += 1;
+    });
+
+    // Create daily data points for the last 6 months
     for (let i = 0; i < 180; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
 
-      // Count employees at this date
-      const employeesAtDate = employees.filter(emp => {
-        if (!emp.created_at) return false;
-        return new Date(emp.created_at) <= date;
-      }).length;
-
-      // Calculate total salary at this date
-      const totalSalaryAtDate = employees
-        .filter(emp => emp.created_at && new Date(emp.created_at) <= date)
-        .reduce((sum, emp) => sum + (emp.salary_usd || 0), 0);
-
-      // Monthly payroll amount (approximate)
-      const monthlyPayroll = totalSalaryAtDate / 12;
+      const dayData = paymentsByDate[dateStr] || { amount: 0, count: 0 };
 
       payrollData.push({
         date: dateStr,
-        amount: Math.round(monthlyPayroll),
-        employees: employeesAtDate,
+        amount: Math.round(dayData.amount),
+        employees: dayData.count,
       });
     }
 
     // Transaction distribution
     const transactionDistribution = [
       {
-        name: 'Payroll',
+        name: 'Payroll Payments',
+        value: (paymentsRes.data || []).reduce((sum, t) => sum + parseFloat(t.amount || 0), 0),
+        count: paymentsRes.data?.length || 0,
+      },
+      {
+        name: 'External Transfers',
         value: (externalRes.data || []).reduce((sum, t) => sum + parseFloat(t.amount || 0), 0),
         count: externalRes.data?.length || 0,
       },
       {
-        name: 'Off-Ramp',
+        name: 'Bank Withdrawals',
         value: (offrampRes.data || []).reduce((sum, t) => sum + parseFloat(t.net_amount || t.amount || 0), 0),
         count: offrampRes.data?.length || 0,
       },
       {
-        name: 'On-Ramp',
+        name: 'USDC Purchases',
         value: (onrampRes.data || []).reduce((sum, t) => sum + parseFloat(t.amount_usd || 0), 0),
         count: onrampRes.data?.length || 0,
       },
-    ];
+    ].filter(item => item.count > 0); // Only show categories with transactions
 
     // Salary distribution
     const salaryRanges = [

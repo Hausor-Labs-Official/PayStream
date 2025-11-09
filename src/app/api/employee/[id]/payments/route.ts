@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
@@ -8,31 +8,31 @@ export const dynamic = 'force-dynamic';
  * Get payment history for a specific employee
  */
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const resolvedParams = await params;
-    const employeeId = parseInt(resolvedParams.id);
-
-    if (isNaN(employeeId)) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid employee ID' },
-        { status: 400 }
-      );
-    }
+    const employeeId = resolvedParams.id;
 
     const supabase = getSupabaseClient();
 
-    // Fetch payment history from external_transfers table
+    // Fetch payment history for this employee
     const { data: payments, error } = await supabase
-      .from('external_transfers')
+      .from('payments')
       .select('*')
       .eq('employee_id', employeeId)
       .order('created_at', { ascending: false });
 
     if (error) {
-      throw error;
+      console.error('Error fetching payments:', error);
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Failed to fetch payments',
+        },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
@@ -40,12 +40,11 @@ export async function GET(
       data: payments || [],
     });
   } catch (error) {
-    console.error('Error fetching payment history:', error);
+    console.error('Error in payments API:', error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch payment history',
-        details: (error as Error).message,
+        error: (error as Error).message,
       },
       { status: 500 }
     );

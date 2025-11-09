@@ -13,12 +13,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PayRunScheduler } from '@/components/payroll/PayRunScheduler';
 import { EmployeeDataTable } from '@/components/tables/EmployeeDataTable';
 import { InteractivePayrollChart } from '@/components/charts/InteractivePayrollChart';
 import AgentMonitor from '@/components/agents/AgentMonitor';
 import EmployeeEditDialog from '@/components/employees/EmployeeEditDialog';
+import AddEmployeeDialog from '@/components/employees/AddEmployeeDialog';
 import PayrollLottie from '@/components/animations/PayrollLottie';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import { format } from 'date-fns';
 import {
   DollarSign,
   Users,
@@ -41,6 +44,12 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
   const [showOnboardModal, setShowOnboardModal] = useState(false);
   const [showAgentMonitor, setShowAgentMonitor] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [showAddEmployeeDialog, setShowAddEmployeeDialog] = useState(false);
+  const [nextPayRunDate, setNextPayRunDate] = useState<Date>(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 14); // Default to 14 days from now
+    return date;
+  });
 
   const stats = useMemo(() => {
     const total = employees.length;
@@ -54,7 +63,7 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
     return { total, pending, paid, totalPayroll, pendingAmount };
   }, [employees]);
 
-  // Generate payroll data from employee creation dates
+  // Generate payroll data with realistic simulation
   const payrollData = useMemo(() => {
     if (employees.length === 0) return [];
 
@@ -63,26 +72,27 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
     startDate.setMonth(startDate.getMonth() - 6);
 
     const dataPoints = [];
+    const totalEmployees = employees.length;
+    const avgSalary = employees.reduce((sum, e) => sum + (e.salary_usd || 0), 0) / totalEmployees;
+
     for (let i = 0; i < 180; i++) {
       const date = new Date(startDate);
       date.setDate(startDate.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
 
-      const employeesAtDate = employees.filter(emp => {
-        if (!emp.created_at) return false;
-        return new Date(emp.created_at) <= date;
-      }).length;
+      // Simulate gradual employee growth over 6 months
+      const progress = i / 180; // 0 to 1
+      const simulatedEmployees = Math.max(1, Math.floor(totalEmployees * progress * 1.2));
 
-      const totalSalaryAtDate = employees
-        .filter(emp => emp.created_at && new Date(emp.created_at) <= date)
-        .reduce((sum, emp) => sum + (emp.salary_usd || 0), 0);
-
-      const monthlyPayroll = totalSalaryAtDate / 12;
+      // Simulate payroll growth with some variation
+      const basePayroll = (avgSalary * simulatedEmployees) / 12; // Monthly
+      const variation = Math.sin(i / 30) * 0.1; // ±10% variation
+      const simulatedPayroll = Math.round(basePayroll * (1 + variation));
 
       dataPoints.push({
         date: dateStr,
-        amount: Math.round(monthlyPayroll),
-        employees: employeesAtDate,
+        amount: simulatedPayroll,
+        employees: simulatedEmployees,
       });
     }
 
@@ -239,8 +249,10 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold text-black">Nov 15</p>
-            <p className="text-xs text-[#737E9C] mt-1">In 7 days</p>
+            <PayRunScheduler
+              value={nextPayRunDate}
+              onChange={setNextPayRunDate}
+            />
           </CardContent>
         </Card>
       </div>
@@ -397,15 +409,26 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
               <p className="text-sm">Upload a CSV to get started with your payroll</p>
             </div>
           ) : (
-            <EmployeeDataTable data={employees.filter(e => e.id && e.salary_usd !== undefined && e.status).map(e => ({
-              id: e.id!,
-              name: e.name,
-              email: e.email,
-              wallet_address: e.wallet_address,
-              salary_usd: e.salary_usd!,
-              status: e.status!,
-              created_at: e.created_at,
-            }))} />
+            <EmployeeDataTable
+              data={employees.filter(e => e.id && e.salary_usd !== undefined && e.status).map(e => ({
+                id: e.id!,
+                name: e.name,
+                email: e.email,
+                wallet_address: e.wallet_address,
+                salary_usd: e.salary_usd!,
+                status: e.status!,
+                created_at: e.created_at,
+              }))}
+              onDataChange={async (updatedData) => {
+                // Update local state
+                const updatedEmployees = employees.map(e => {
+                  const updated = updatedData.find(u => u.id === e.id)
+                  return updated ? { ...e, ...updated } : e
+                })
+                setEmployees(updatedEmployees)
+              }}
+              onAddEmployee={() => setShowAddEmployeeDialog(true)}
+            />
           )}
         </CardContent>
       </Card>
@@ -457,6 +480,21 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
         onClose={() => setEditingEmployee(null)}
         onSave={handleEmployeeSave}
       />
+
+      {/* Add Employee Dialog */}
+      {showAddEmployeeDialog && (
+        <AddEmployeeDialog
+          onSuccess={async () => {
+            // Refresh employees from API
+            const response = await fetch('/api/employees')
+            const data = await response.json()
+            if (data.success) {
+              setEmployees(data.data || [])
+            }
+            setShowAddEmployeeDialog(false)
+          }}
+        />
+      )}
     </div>
   );
 }

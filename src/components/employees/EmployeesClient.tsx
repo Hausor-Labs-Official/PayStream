@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import EmployeeEditDialog from './EmployeeEditDialog';
 import {
   Table,
   TableBody,
@@ -71,6 +72,7 @@ export default function EmployeesClient({ initialEmployees }: EmployeesClientPro
   const [sortField, setSortField] = useState<SortField>('created_at');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [isDeleting, setIsDeleting] = useState<number | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
   // Calculate statistics from real data
   const stats = useMemo(() => {
@@ -261,16 +263,14 @@ export default function EmployeesClient({ initialEmployees }: EmployeesClientPro
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-black mb-2">Employees</h1>
-        <p className="text-sm text-[#737E9C]">
-          Manage your team and track payroll
-        </p>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end mb-6">
+      {/* Header with Actions */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-semibold text-black mb-2">Employees</h1>
+          <p className="text-sm text-[#737E9C]">
+            Manage your team and track payroll
+          </p>
+        </div>
         <div className="flex gap-3">
           <AddEmployeeDialog onSuccess={() => window.location.reload()} />
           <label htmlFor="csv-upload">
@@ -534,19 +534,15 @@ export default function EmployeesClient({ initialEmployees }: EmployeesClientPro
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-2 text-gray-700">
-                          <Mail className="w-4 h-4 text-gray-400" />
+                        <div className="text-gray-700">
                           {emp.email}
                         </div>
                       </TableCell>
                       <TableCell>
                         {emp.wallet_address ? (
-                          <div className="flex items-center gap-2">
-                            <Wallet className="w-4 h-4 text-gray-400" />
-                            <code className="text-xs font-mono bg-gray-100 px-2 py-1 rounded border border-gray-200">
-                              {emp.wallet_address.slice(0, 6)}...{emp.wallet_address.slice(-4)}
-                            </code>
-                          </div>
+                          <code className="text-xs font-mono bg-gray-100 px-2 py-1 rounded border border-gray-200">
+                            {emp.wallet_address.slice(0, 6)}...{emp.wallet_address.slice(-4)}
+                          </code>
                         ) : (
                           <span className="text-gray-400 text-sm">No wallet</span>
                         )}
@@ -609,6 +605,10 @@ export default function EmployeesClient({ initialEmployees }: EmployeesClientPro
                               <DropdownMenuItem onClick={() => handleViewEmployee(emp)}>
                                 <Eye className="w-4 h-4 mr-2" />
                                 View Dashboard
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => setEditingEmployee(emp)}>
+                                <Edit className="w-4 h-4 mr-2" />
+                                Edit Employee
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => {
                                 navigator.clipboard.writeText(emp.email);
@@ -697,6 +697,19 @@ export default function EmployeesClient({ initialEmployees }: EmployeesClientPro
           )}
         </CardContent>
       </Card>
+
+      {/* Employee Edit Dialog */}
+      <EmployeeEditDialog
+        employee={editingEmployee}
+        isOpen={editingEmployee !== null}
+        onClose={() => setEditingEmployee(null)}
+        onSave={(updatedEmployee) => {
+          setEmployees((prev) =>
+            prev.map((emp) => (emp.id === updatedEmployee.id ? updatedEmployee : emp))
+          );
+          setEditingEmployee(null);
+        }}
+      />
     </div>
   );
 }

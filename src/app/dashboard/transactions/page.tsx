@@ -6,11 +6,12 @@ import { TrendingUp, ArrowDownLeft, ArrowUpRight, Activity } from 'lucide-react'
 async function getTransactions() {
   const supabase = getSupabaseClient();
 
-  // Fetch all transaction types
-  const [offrampRes, externalRes, onrampRes] = await Promise.all([
+  // Fetch all transaction types including payments
+  const [offrampRes, externalRes, onrampRes, paymentsRes] = await Promise.all([
     supabase.from('offramp_transactions').select('*').order('created_at', { ascending: false }),
     supabase.from('external_transfers').select('*, employees(name)').order('created_at', { ascending: false }),
     supabase.from('onramp_transactions').select('*').order('created_at', { ascending: false }),
+    supabase.from('payments').select('*, employees(name, email)').order('created_at', { ascending: false }),
   ]);
 
   // Combine and normalize all transactions
@@ -45,6 +46,17 @@ async function getTransactions() {
       status: t.status === 'complete' ? 'complete' as const : 'pending' as const,
       destination: 'Payroll Wallet',
       transaction_hash: t.transaction_hash,
+      created_at: t.created_at,
+    })),
+    ...(paymentsRes.data || []).map(t => ({
+      id: t.id,
+      type: 'payroll' as const,
+      employee_name: t.employees?.name,
+      amount: parseFloat(t.amount),
+      status: t.status === 'confirmed' ? 'confirmed' as const :
+              t.status === 'pending' ? 'pending' as const : 'failed' as const,
+      destination: `${t.employees?.name || 'Employee'} (${t.currency || 'USDC'})`,
+      transaction_hash: t.tx_hash,
       created_at: t.created_at,
     })),
   ];
@@ -126,7 +138,7 @@ export default async function TransactionsPage() {
           <CardContent>
             <p className="text-2xl font-semibold text-green-600">{stats.completedTransactions}</p>
             <p className="text-xs text-[#737E9C] mt-1">
-              {((stats.completedTransactions / stats.totalTransactions) * 100).toFixed(1)}% success rate
+              {stats.totalTransactions > 0 ? ((stats.completedTransactions / stats.totalTransactions) * 100).toFixed(1) : '0.0'}% success rate
             </p>
           </CardContent>
         </Card>

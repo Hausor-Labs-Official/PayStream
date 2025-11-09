@@ -12,10 +12,15 @@ export async function GET() {
   try {
     const executorAgent = new ExecutorAgent();
 
-    // Get USDC balance
+    // Get USDC balance from blockchain
     const balance = await executorAgent.getUSDCBalance();
 
-    // Get pending employees and calculate required payroll
+    // Get wallet address
+    const { getSigner } = await import('@/lib/arc');
+    const signer = getSigner();
+    const address = signer.address;
+
+    // Get pending employees and calculate required payroll (for dashboard)
     const pendingEmployees = await getPendingEmployees();
 
     const estimatedPayroll = pendingEmployees.reduce((sum, emp) => {
@@ -28,8 +33,14 @@ export async function GET() {
     const hasSufficientBalance = balance >= estimatedPayroll;
     const shortfall = hasSufficientBalance ? 0 : estimatedPayroll - balance;
 
+    // Return data in format expected by wallet page
     return NextResponse.json({
       success: true,
+      balance: balance,
+      address: address,
+      currency: 'USDC',
+      network: 'Arc Testnet',
+      // Additional data for dashboard
       data: {
         balance,
         estimatedPayroll,

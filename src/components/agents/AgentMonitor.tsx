@@ -29,35 +29,42 @@ const PAYROLL_STEPS: AgentStep[] = [
     agent: 'Penny AI',
     action: 'Analyzing payroll requirements',
     status: 'pending',
-    details: 'Reviewing employee data and payment schedules',
+    details: 'Reviewing pending employees and payment amounts',
   },
   {
     id: '2',
     agent: 'Payroll Agent',
     action: 'Calculating payments',
     status: 'pending',
-    details: 'Computing salaries, deductions, and bonuses',
+    details: 'Computing 1 USDC per employee batch payment',
   },
   {
     id: '3',
     agent: 'Funding Agent',
-    action: 'Checking treasury balance',
+    action: 'Checking USDC balance',
     status: 'pending',
-    details: 'Verifying USDC availability on Arc network',
+    details: 'Verifying native USDC balance on Arc Testnet',
   },
   {
     id: '4',
     agent: 'Executor Agent',
-    action: 'Processing blockchain transactions',
+    action: 'Executing batch payment',
     status: 'pending',
-    details: 'Executing USDC transfers to employee wallets',
+    details: 'Sending USDC to employee wallets via smart contract',
   },
   {
     id: '5',
-    agent: 'Onboarding Agent',
-    action: 'Updating employee records',
+    agent: 'Database Agent',
+    action: 'Recording transactions',
     status: 'pending',
-    details: 'Marking payments as completed in system',
+    details: 'Creating payment records with transaction hashes',
+  },
+  {
+    id: '6',
+    agent: 'Email Agent',
+    action: 'Sending notifications',
+    status: 'pending',
+    details: 'Sending pay stubs with Arc Explorer links to employees',
   },
 ];
 
@@ -127,9 +134,13 @@ export default function AgentMonitor({
           status: 'completed',
           timestamp: new Date(),
           duration: i === 1 ? duration : 0.5,
-          details: i === 1
-            ? `Processed ${result.paid} employees - $${result.totalPaid.toFixed(2)} USDC`
-            : step.details,
+          details:
+            i === 1 ? `Calculated payments for ${result.paid} employees - ${result.totalPaid.toFixed(2)} USDC total` :
+            i === 2 ? `Balance verified - Sufficient USDC available` :
+            i === 3 ? `Batch payment executed - TX: ${result.tx?.slice(0, 10)}...` :
+            i === 4 ? `Created ${result.paid} payment records in database` :
+            i === 5 ? `Sent ${result.emailsSent || result.paid} pay stub emails` :
+            step.details,
         }))
       );
       setCurrentStepIndex(steps.length - 1);

@@ -219,7 +219,10 @@ export async function getEmployeeById(id: number): Promise<Employee | null> {
 
     return mapDbRowToEmployee(data);
   } catch (error) {
-    console.error('Error getting employee by ID:', error);
+    // Only log in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error getting employee by ID:', error instanceof Error ? error.message : String(error));
+    }
     return null;
   }
 }

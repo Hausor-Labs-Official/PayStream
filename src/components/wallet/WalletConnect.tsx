@@ -143,7 +143,7 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
                     decimals: 18,
                   },
                   rpcUrls: ['https://rpc.testnet.arc.network'],
-                  blockExplorerUrls: ['https://testnet.arcscan.com'],
+                  blockExplorerUrls: ['https://testnet.arcscan.app'],
                 },
               ],
             });

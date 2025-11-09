@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { CheckCircle2, Loader2 } from 'lucide-react';
 
 interface ProcessStep {
@@ -76,6 +76,7 @@ export default function AgentProcessModal({
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <DialogTitle className="sr-only">{title}</DialogTitle>
         <div className="py-6">
           {/* Header */}
           <div className="text-center mb-6">
