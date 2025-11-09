@@ -109,17 +109,24 @@ export default function Sidebar({ collapsed }: SidebarProps) {
                 height={32}
                 className="flex-shrink-0"
               />
-              <span className="text-xl font-semibold text-foreground">Paystream AI</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-semibold text-foreground">Paystream AI</span>
+                <span className="px-1.5 py-0.5 text-[10px] font-bold text-[#0044FF] bg-[#EEFF00] rounded-md">
+                  Beta
+                </span>
+              </div>
             </div>
           )}
           {collapsed && (
-            <Image
-              src="/paystream-logo.svg"
-              alt="Paystream AI"
-              width={32}
-              height={32}
-              className="mx-auto"
-            />
+            <div className="relative mx-auto">
+              <Image
+                src="/paystream-logo.svg"
+                alt="Paystream AI"
+                width={32}
+                height={32}
+              />
+              <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#EEFF00] rounded-full border border-white" />
+            </div>
           )}
         </div>
 

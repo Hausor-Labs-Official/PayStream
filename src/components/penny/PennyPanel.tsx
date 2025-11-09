@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Mic, Send, MicOff } from 'lucide-react';
+import { X, Mic, Send, MicOff, Sparkles } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import PennyOrb from './PennyOrb';
 import PennyThinking from './PennyThinking';
+import AgentMonitor from '../agents/AgentMonitor';
 
 interface Message {
   id: string;
@@ -19,12 +20,22 @@ interface PennyPanelProps {
   onClose: () => void;
 }
 
+const PROMPT_SUGGESTIONS = [
+  'Run payroll for this month',
+  'Show me employee status',
+  'Check treasury balance',
+  'Onboard new employee',
+  'Review recent transactions',
+];
+
 export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
   const { user } = useUser();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showAgentMonitor, setShowAgentMonitor] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -60,9 +71,17 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     }
   }, [isOpen, user, messages.length]);
 
+  const detectAgentCommand = (text: string): boolean => {
+    const payrollCommands = ['run payroll', 'process payroll', 'execute payroll', 'pay employees'];
+    const lowerText = text.toLowerCase();
+    return payrollCommands.some(cmd => lowerText.includes(cmd));
+  };
+
   const handleSend = async () => {
     const messageText = input.trim();
     if (!messageText || isLoading) return;
+
+    setShowSuggestions(false);
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -74,6 +93,24 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     resetTranscript();
+
+    // Check if this is an agent command
+    if (detectAgentCommand(messageText)) {
+      const agentMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: 'I\'m initiating the payroll process now. Our AI agents will handle everything automatically. You can monitor the progress in the Agent Monitor.',
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, agentMessage]);
+
+      // Show agent monitor after a brief delay
+      setTimeout(() => {
+        setShowAgentMonitor(true);
+      }, 1000);
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -119,6 +156,11 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInput(suggestion);
+    setShowSuggestions(false);
+  };
+
   const playAudio = (url: string) => {
     if (audioRef.current) {
       audioRef.current.pause();
@@ -153,7 +195,8 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed right-0 top-0 w-[28rem] h-screen bg-white border-l border-gray-200 z-30 flex flex-col">
+    <>
+      <div className="fixed right-0 top-0 w-[28rem] h-screen bg-white border-l border-gray-200 z-30 flex flex-col">
       {/* Header */}
       <div className="h-16 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
@@ -174,6 +217,27 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Prompt Suggestions */}
+        {showSuggestions && messages.length <= 1 && (
+          <div className="space-y-3 mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Sparkles className="w-4 h-4 text-blue-500" />
+              <span className="font-medium">Try these commands:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {PROMPT_SUGGESTIONS.map((suggestion, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 rounded-xl text-sm font-medium transition-all hover:shadow-md border border-blue-100"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {messages.map((message) => (
           <div
             key={message.id}
@@ -245,5 +309,13 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
         </p>
       </div>
     </div>
+
+    {/* Agent Monitor */}
+    <AgentMonitor
+      isOpen={showAgentMonitor}
+      onClose={() => setShowAgentMonitor(false)}
+      processType="payroll"
+    />
+    </>
   );
 }
