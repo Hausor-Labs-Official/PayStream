@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Employee } from '@/lib/supabase';
 import {
   Dialog,
@@ -33,7 +33,7 @@ export default function EmployeeEditDialog({
   const [error, setError] = useState<string | null>(null);
 
   // Update form data when employee changes
-  useState(() => {
+  useEffect(() => {
     if (employee) {
       setFormData({
         name: employee.name,
@@ -43,7 +43,7 @@ export default function EmployeeEditDialog({
         status: employee.status,
       });
     }
-  });
+  }, [employee]);
 
   const handleSave = async () => {
     if (!employee) return;
