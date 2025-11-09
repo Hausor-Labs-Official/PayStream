@@ -9,10 +9,11 @@ export const dynamic = 'force-dynamic';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = parseInt(params.id);
+    const resolvedParams = await params;
+    const employeeId = parseInt(resolvedParams.id);
 
     if (isNaN(employeeId)) {
       return NextResponse.json(
@@ -53,10 +54,11 @@ export async function GET(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = parseInt(params.id);
+    const resolvedParams = await params;
+    const employeeId = parseInt(resolvedParams.id);
 
     if (isNaN(employeeId)) {
       return NextResponse.json(
@@ -110,10 +112,11 @@ export async function DELETE(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const employeeId = parseInt(params.id);
+    const resolvedParams = await params;
+    const employeeId = parseInt(resolvedParams.id);
 
     if (isNaN(employeeId)) {
       return NextResponse.json(
