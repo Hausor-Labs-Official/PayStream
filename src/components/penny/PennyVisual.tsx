@@ -1,6 +1,6 @@
 'use client';
 
-import { useRive, useStateMachineInput } from '@rive-app/react-webgl2';
+import { useRive, useStateMachineInput, Fit } from '@rive-app/react-webgl2';
 import { useEffect } from 'react';
 
 interface PennyVisualProps {
@@ -22,7 +22,7 @@ export default function PennyVisual({
     src: '/elements/orb-1.2.riv', // YOUR FILE
     stateMachines: stateMachine,
     autoplay: true,
-    layout: { fit: 'cover' },
+    layout: { fit: Fit.Cover },
     onLoad: () => {
       console.log('Penny Orb loaded!');
     },
