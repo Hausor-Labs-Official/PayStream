@@ -22,6 +22,7 @@ recovery_file*.dat
 
 # Environment
 .env.local
+.env.production
 
 # Logs
 *.log
