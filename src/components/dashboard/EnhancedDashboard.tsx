@@ -17,6 +17,7 @@ import { EmployeeDataTable } from '@/components/tables/EmployeeDataTable';
 import { InteractivePayrollChart } from '@/components/charts/InteractivePayrollChart';
 import AgentMonitor from '@/components/agents/AgentMonitor';
 import EmployeeEditDialog from '@/components/employees/EmployeeEditDialog';
+import PayrollLottie from '@/components/animations/PayrollLottie';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import {
   DollarSign,
@@ -260,17 +261,10 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
           disabled={isProcessing || stats.pending === 0}
           className="bg-[#0044FF] hover:bg-[#0033CC] text-white"
         >
-          {isProcessing ? (
-            <>
-              <Clock className="w-4 h-4 mr-2 animate-spin" />
-              AI Processing Payroll...
-            </>
-          ) : (
-            <>
-              <Play className="w-4 h-4 mr-2" />
-              Run Payroll with AI ({stats.pending})
-            </>
-          )}
+          <Play className="w-4 h-4 mr-2" />
+          <span className="gradient-text-white">
+            Run Payroll with AI ({stats.pending})
+          </span>
         </Button>
       </div>
 

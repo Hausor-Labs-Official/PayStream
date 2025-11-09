@@ -119,3 +119,37 @@ td {
 .border-r {
   border-color: #E5E7EB !important;
 }
+
+/* Gradient text animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer {
+  background-size: 200% auto;
+  animation: shimmer 3s linear infinite;
+}
+
+/* Gradient text styles */
+.gradient-text {
+  background: linear-gradient(90deg, #0044FF, #00D4FF, #0044FF);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+.gradient-text-white {
+  background: linear-gradient(90deg, #ffffff, #e0f2fe, #bfdbfe, #ffffff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}

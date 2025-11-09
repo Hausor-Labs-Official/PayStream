@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { X, CheckCircle2, Clock, AlertCircle, Loader2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import PayrollLottie from '../animations/PayrollLottie';
 
 interface AgentStep {
   id: string;
@@ -215,6 +216,15 @@ export default function AgentMonitor({
 
         {/* Steps */}
         <div className="p-6 overflow-y-auto max-h-[calc(80vh-200px)]">
+          {/* Lottie Animation - Show when processing */}
+          {progress > 0 && progress < 100 && (
+            <div className="flex justify-center mb-6">
+              <div className="w-32 h-32">
+                <PayrollLottie />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-4">
             {steps.map((step, index) => (
               <motion.div
@@ -252,7 +262,11 @@ export default function AgentMonitor({
                   {/* Content */}
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full">
+                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                        step.status === 'in_progress'
+                          ? 'gradient-text bg-gradient-to-r from-blue-100 to-indigo-100'
+                          : 'text-blue-600 bg-blue-100'
+                      }`}>
                         {step.agent}
                       </span>
                       {step.duration && (
@@ -261,7 +275,13 @@ export default function AgentMonitor({
                         </span>
                       )}
                     </div>
-                    <h4 className="font-medium text-gray-900">{step.action}</h4>
+                    <h4 className={`font-medium ${
+                      step.status === 'in_progress'
+                        ? 'gradient-text'
+                        : 'text-gray-900'
+                    }`}>
+                      {step.action}
+                    </h4>
                     {step.details && (
                       <p className="text-sm text-gray-600 mt-1">{step.details}</p>
                     )}
@@ -280,13 +300,13 @@ export default function AgentMonitor({
         {/* Footer */}
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm">
               {error ? (
                 <span className="text-red-600 font-medium">{error}</span>
               ) : progress === 100 ? (
                 <span className="text-green-600 font-medium">All steps completed successfully!</span>
               ) : (
-                <span>Agents working autonomously...</span>
+                <span className="gradient-text font-medium">Agents working autonomously...</span>
               )}
             </p>
             {(progress === 100 || error) && (
