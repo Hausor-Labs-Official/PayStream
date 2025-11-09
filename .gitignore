@@ -1,0 +1,27 @@
+node_modules
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# Claude Code
+.claude/
+
+# Markdown documentation files
+*.md
+!README.md
+
+# Next.js
+.next/
+out/
+
+# Cache
+cache/
+
+# Recovery files
+recovery_file*.dat
+
+# Environment
+.env.local
+
+# Logs
+*.log
