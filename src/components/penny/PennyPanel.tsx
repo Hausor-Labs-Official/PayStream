@@ -450,6 +450,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
       isOpen={showAgentMonitor}
       onClose={() => setShowAgentMonitor(false)}
       processType="payroll"
+      executeReal={true}
     />
     </>
   );

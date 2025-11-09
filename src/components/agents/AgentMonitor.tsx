@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, CheckCircle2, Clock, AlertCircle, Loader2, Play } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,6 +19,7 @@ interface AgentMonitorProps {
   onClose: () => void;
   processType?: 'payroll' | 'onboarding' | 'funding' | 'custom';
   steps?: AgentStep[];
+  executeReal?: boolean; // If true, actually execute the payroll process
 }
 
 const PAYROLL_STEPS: AgentStep[] = [
@@ -64,59 +65,101 @@ export default function AgentMonitor({
   onClose,
   processType = 'payroll',
   steps: customSteps,
+  executeReal = true,
 }: AgentMonitorProps) {
   const [steps, setSteps] = useState<AgentStep[]>(customSteps || PAYROLL_STEPS);
   const [currentStepIndex, setCurrentStepIndex] = useState(-1);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate process execution
-  useEffect(() => {
-    if (!isOpen) return;
+  // Real payroll execution
+  const executeRealPayroll = useCallback(async () => {
+    setError(null);
 
-    let timeoutId: NodeJS.Timeout;
-
-    const executeNextStep = (index: number) => {
-      if (index >= steps.length) return;
-
-      // Mark current step as in progress
+    try {
+      // Step 1: Analyzing payroll requirements
       setSteps((prev) =>
         prev.map((step, i) =>
-          i === index
+          i === 0
             ? { ...step, status: 'in_progress', timestamp: new Date() }
             : step
         )
       );
-      setCurrentStepIndex(index);
+      setCurrentStepIndex(0);
 
-      // Complete step after random duration (1-3 seconds)
-      const duration = Math.random() * 2000 + 1000;
-      timeoutId = setTimeout(() => {
-        setSteps((prev) =>
-          prev.map((step, i) =>
-            i === index
-              ? {
-                  ...step,
-                  status: 'completed',
-                  duration: duration / 1000,
-                }
-              : step
-          )
-        );
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-        // Move to next step
-        executeNextStep(index + 1);
-      }, duration);
-    };
+      setSteps((prev) =>
+        prev.map((step, i) =>
+          i === 0
+            ? { ...step, status: 'completed', duration: 1.5 }
+            : step
+        )
+      );
 
-    // Start execution
-    const startDelay = setTimeout(() => {
-      executeNextStep(0);
-    }, 500);
+      // Step 2-5: Execute actual payroll via API
+      setSteps((prev) =>
+        prev.map((step, i) =>
+          i === 1
+            ? { ...step, status: 'in_progress', timestamp: new Date() }
+            : step
+        )
+      );
+      setCurrentStepIndex(1);
 
-    return () => {
-      clearTimeout(startDelay);
-      clearTimeout(timeoutId);
-    };
-  }, [isOpen, steps.length]);
+      const startTime = Date.now();
+      const response = await fetch('/api/payroll', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      const result = await response.json();
+      const duration = (Date.now() - startTime) / 1000;
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.message || result.error || 'Payroll execution failed');
+      }
+
+      // Mark all remaining steps as completed
+      setSteps((prev) =>
+        prev.map((step, i) => ({
+          ...step,
+          status: 'completed',
+          timestamp: new Date(),
+          duration: i === 1 ? duration : 0.5,
+          details: i === 1
+            ? `Processed ${result.paid} employees - $${result.totalPaid.toFixed(2)} USDC`
+            : step.details,
+        }))
+      );
+      setCurrentStepIndex(steps.length - 1);
+
+    } catch (err) {
+      const errorMessage = (err as Error).message;
+      setError(errorMessage);
+
+      // Mark current step as failed
+      setSteps((prev) =>
+        prev.map((step, i) =>
+          i === currentStepIndex
+            ? { ...step, status: 'failed', details: errorMessage }
+            : step
+        )
+      );
+    }
+  }, [currentStepIndex, steps.length]);
+
+  // Execute payroll when opened
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (executeReal && processType === 'payroll') {
+      const delay = setTimeout(() => {
+        executeRealPayroll();
+      }, 500);
+
+      return () => clearTimeout(delay);
+    }
+  }, [isOpen, executeReal, processType, executeRealPayroll]);
 
   if (!isOpen) return null;
 
@@ -132,39 +175,39 @@ export default function AgentMonitor({
         className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] overflow-hidden"
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-6 text-white">
+        <div className="bg-white border-b border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                <Play className="w-5 h-5" />
+              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                <Play className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <h2 className="text-xl font-semibold">Agent Execution Monitor</h2>
-                <p className="text-sm text-blue-100">
+                <h2 className="text-xl font-semibold text-gray-900">Agent Execution Monitor</h2>
+                <p className="text-sm text-gray-600">
                   {processType.charAt(0).toUpperCase() + processType.slice(1)} Process
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 text-gray-600" />
             </button>
           </div>
 
           {/* Progress Bar */}
           <div className="space-y-2">
-            <div className="flex justify-between text-sm">
+            <div className="flex justify-between text-sm text-gray-700">
               <span>{completedSteps} of {steps.length} steps completed</span>
               <span>{Math.round(progress)}%</span>
             </div>
-            <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progress}%` }}
                 transition={{ duration: 0.3 }}
-                className="h-full bg-white rounded-full"
+                className="h-full bg-blue-600 rounded-full"
               />
             </div>
           </div>
@@ -238,13 +281,15 @@ export default function AgentMonitor({
         <div className="border-t border-gray-200 p-4 bg-gray-50">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600">
-              {progress === 100 ? (
+              {error ? (
+                <span className="text-red-600 font-medium">{error}</span>
+              ) : progress === 100 ? (
                 <span className="text-green-600 font-medium">All steps completed successfully!</span>
               ) : (
                 <span>Agents working autonomously...</span>
               )}
             </p>
-            {progress === 100 && (
+            {(progress === 100 || error) && (
               <button
                 onClick={onClose}
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table';
 import { EmployeeDataTable } from '@/components/tables/EmployeeDataTable';
 import { InteractivePayrollChart } from '@/components/charts/InteractivePayrollChart';
+import AgentMonitor from '@/components/agents/AgentMonitor';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import {
   DollarSign,
@@ -36,6 +37,7 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
   const [employees, setEmployees] = useState<Employee[]>(initialEmployees);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showOnboardModal, setShowOnboardModal] = useState(false);
+  const [showAgentMonitor, setShowAgentMonitor] = useState(false);
 
   const stats = useMemo(() => {
     const total = employees.length;
@@ -117,32 +119,20 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
   }, [employees]);
 
   const handleRunPayroll = async () => {
-    if (!confirm('Are you sure you want to process payroll for all pending employees?')) {
-      return;
-    }
+    setShowAgentMonitor(true);
+  };
 
-    setIsProcessing(true);
-
+  const handleAgentMonitorClose = async () => {
+    setShowAgentMonitor(false);
+    // Refresh employees after payroll completion
     try {
-      const response = await fetch('/api/payroll', {
-        method: 'POST',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        alert(`Payroll processed successfully! ${result.paid} employees paid.`);
-        // Refresh employees
-        const refreshResponse = await fetch('/api/employees');
-        const refreshData = await refreshResponse.json();
-        setEmployees(refreshData.employees || []);
-      } else {
-        alert(`Payroll processing failed: ${result.error || result.message}`);
+      const refreshResponse = await fetch('/api/employees');
+      const refreshData = await refreshResponse.json();
+      if (refreshData.success && refreshData.employees) {
+        setEmployees(refreshData.employees);
       }
     } catch (error) {
-      alert(`Error: ${(error as Error).message}`);
-    } finally {
-      setIsProcessing(false);
+      console.error('Failed to refresh employees:', error);
     }
   };
 
@@ -448,6 +438,14 @@ export default function EnhancedDashboard({ initialEmployees }: EnhancedDashboar
           </Card>
         </div>
       )}
+
+      {/* Agent Monitor */}
+      <AgentMonitor
+        isOpen={showAgentMonitor}
+        onClose={handleAgentMonitorClose}
+        processType="payroll"
+        executeReal={true}
+      />
     </div>
   );
 }
