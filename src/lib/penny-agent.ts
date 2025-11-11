@@ -1,6 +1,7 @@
 import Groq from 'groq-sdk';
 import { getSupabaseClient } from './supabase';
 import { ethers } from 'ethers';
+import { storeConversation, retrieveConversationContext } from '@/services/vector-search';
 
 /**
  * Penny - AI-powered NLP agent for Paystream AI
@@ -54,8 +55,24 @@ export class PennyAgent {
   /**
    * Main query method - processes natural language queries
    */
-  async query(prompt: string): Promise<PennyResponse> {
+  async query(prompt: string, userId?: string): Promise<PennyResponse> {
     try {
+      // Retrieve conversation context from Qdrant if userId provided
+      let contextMessages: string[] = [];
+      if (userId) {
+        try {
+          const context = await retrieveConversationContext(userId, prompt, { limit: 3 });
+          contextMessages = context.map((c) => `Previous: ${c.payload.message} - ${c.payload.response}`);
+
+          if (contextMessages.length > 0) {
+            console.log(`[Penny] Retrieved ${contextMessages.length} context messages`);
+          }
+        } catch (err) {
+          console.error('[Penny] Failed to retrieve context:', err);
+          // Continue without context
+        }
+      }
+
       // Add user message to history
       this.conversationHistory.push({
         role: 'user',
@@ -63,7 +80,7 @@ export class PennyAgent {
       });
 
       // Analyze the query to determine intent and extract data
-      const analysis = await this.analyzeQuery(prompt);
+      const analysis = await this.analyzeQuery(prompt, contextMessages);
 
       // Execute appropriate actions based on intent
       let response: PennyResponse;
@@ -91,6 +108,13 @@ export class PennyAgent {
         content: response.text,
       });
 
+      // Store conversation in Qdrant for future context (non-blocking)
+      if (userId) {
+        storeConversation(userId, prompt, response.text).catch((err) => {
+          console.error('[Penny] Failed to store conversation:', err);
+        });
+      }
+
       return response;
     } catch (error) {
       console.error('Penny query error:', error);
@@ -101,16 +125,13 @@ export class PennyAgent {
   /**
    * Analyze query to determine intent
    */
-  private async analyzeQuery(prompt: string): Promise<any> {
-    const completion = await this.groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile', // Using available model
-      messages: [
-        {
-          role: 'system',
-          content: `You are Penny, an AI assistant for Paystream AI payroll system. Analyze the user's query and determine:
+  private async analyzeQuery(prompt: string, contextMessages: string[] = []): Promise<any> {
+    const systemContent = `You are Penny, an AI assistant for Paystream AI payroll system. Analyze the user's query and determine:
 1. Intent: chart, stats, transaction, employee, or general
 2. Data needed: employees, transactions, salaries, etc.
 3. Chart type if applicable: bar, pie, line, doughnut
+
+${contextMessages.length > 0 ? `\nConversation Context:\n${contextMessages.join('\n')}` : ''}
 
 Respond in JSON format:
 {
@@ -118,7 +139,14 @@ Respond in JSON format:
   "dataType": "employees|transactions|salaries|payments",
   "chartType": "bar|pie|line|doughnut",
   "filters": {}
-}`,
+}`;
+
+    const completion = await this.groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile', // Using available model
+      messages: [
+        {
+          role: 'system',
+          content: systemContent,
         },
         {
           role: 'user',

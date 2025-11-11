@@ -5,12 +5,12 @@ import { askPenny, getPennyAgent } from '@/lib/penny-agent';
  * POST /api/penny
  * Chat with Penny - AI assistant for payroll queries
  *
- * Body: { prompt: string, clearHistory?: boolean }
+ * Body: { prompt: string, userId?: string, clearHistory?: boolean }
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { prompt, clearHistory, enableVoice = true } = body;
+    const { prompt, userId, clearHistory, enableVoice = true } = body;
 
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json(
@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
       getPennyAgent().clearHistory();
     }
 
-    // Query Penny
-    const response = await askPenny(prompt);
+    // Query Penny with userId for conversation memory
+    const response = await getPennyAgent().query(prompt, userId);
 
     // Generate voice response using ElevenLabs if enabled
     let audioUrl = null;
@@ -98,6 +98,8 @@ export async function GET(request: NextRequest) {
       'Transaction history',
       'Arc blockchain balance',
       'Natural language conversation',
+      'Semantic employee search',
+      'Conversation memory (remembers context)',
     ],
     examples: [
       'Show me a chart of employee salaries',

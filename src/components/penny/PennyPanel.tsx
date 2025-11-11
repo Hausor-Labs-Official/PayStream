@@ -1,18 +1,20 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Mic, Send, MicOff, Sparkles, Paperclip, Image as ImageIcon, FileText } from 'lucide-react';
+import { X, Mic, Send, MicOff, Sparkles, Paperclip, Image as ImageIcon, FileText, Volume2 } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import PennyOrb from './PennyOrb';
 import PennyThinking from './PennyThinking';
 import AgentMonitor from '../agents/AgentMonitor';
+import toast from 'react-hot-toast';
 
 interface MessageAttachment {
-  type: 'image' | 'file';
+  type: 'image' | 'file' | 'audio';
   name: string;
   url: string;
   mimeType: string;
+  transcription?: string;
 }
 
 interface Message {
@@ -92,26 +94,60 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     if (!files || files.length === 0) return;
 
     const newAttachments: MessageAttachment[] = [];
+    let processedCount = 0;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
+      const isAudio = file.type.startsWith('audio/');
 
       // Convert file to base64 data URL
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         const result = e.target?.result as string;
+        const base64 = result.split(',')[1];
 
-        const attachment: MessageAttachment = {
-          type: file.type.startsWith('image/') ? 'image' : 'file',
+        let attachment: MessageAttachment = {
+          type: file.type.startsWith('image/') ? 'image' : isAudio ? 'audio' : 'file',
           name: file.name,
           url: result,
           mimeType: file.type,
         };
 
+        // Transcribe audio files
+        if (isAudio) {
+          toast.loading(`Transcribing ${file.name}...`, { id: `transcribe-${i}` });
+          try {
+            const response = await fetch('/api/audio/transcribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                audio: base64,
+                mimeType: file.type,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              attachment.transcription = data.transcription;
+              toast.success(`Transcribed ${file.name}`, { id: `transcribe-${i}` });
+
+              // Auto-fill input with transcription
+              setInput(prev => prev ? `${prev}\n\n${data.transcription}` : data.transcription);
+            } else {
+              toast.error(`Failed to transcribe ${file.name}`, { id: `transcribe-${i}` });
+            }
+          } catch (error) {
+            console.error('Transcription error:', error);
+            toast.error(`Error transcribing ${file.name}`, { id: `transcribe-${i}` });
+          }
+        }
+
         newAttachments.push(attachment);
+        processedCount++;
 
         // Update attachments when all files are processed
-        if (newAttachments.length === files.length) {
+        if (processedCount === files.length) {
           setAttachments(prev => [...prev, ...newAttachments]);
         }
       };
@@ -319,6 +355,22 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                           alt={attachment.name}
                           className="max-w-full max-h-64 rounded-lg"
                         />
+                      ) : attachment.type === 'audio' ? (
+                        <div className="space-y-2">
+                          <div className={`flex items-center gap-2 p-2 rounded-lg ${
+                            message.role === 'user' ? 'bg-blue-600' : 'bg-gray-200'
+                          }`}>
+                            <Volume2 className="w-4 h-4" />
+                            <span className="text-xs font-medium truncate">{attachment.name}</span>
+                          </div>
+                          {attachment.transcription && (
+                            <div className={`p-2 rounded-lg text-xs italic ${
+                              message.role === 'user' ? 'bg-blue-500' : 'bg-gray-100'
+                            }`}>
+                              Transcription: {attachment.transcription}
+                            </div>
+                          )}
+                        </div>
                       ) : (
                         <div className={`flex items-center gap-2 p-2 rounded-lg ${
                           message.role === 'user' ? 'bg-blue-600' : 'bg-gray-200'
@@ -369,6 +421,26 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                       <X className="w-3 h-3" />
                     </button>
                   </div>
+                ) : attachment.type === 'audio' ? (
+                  <div className="relative px-3 py-2 bg-purple-50 border-2 border-purple-200 rounded-lg flex items-center gap-2 max-w-[200px]">
+                    <Volume2 className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs font-medium text-purple-700 block truncate">
+                        {attachment.name}
+                      </span>
+                      {attachment.transcription && (
+                        <span className="text-xs text-purple-600 block truncate">
+                          Transcribed
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => removeAttachment(index)}
+                      className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                    >
+                      <X className="w-3 h-3 text-red-500" />
+                    </button>
+                  </div>
                 ) : (
                   <div className="relative px-3 py-2 bg-blue-50 border-2 border-blue-200 rounded-lg flex items-center gap-2">
                     <FileText className="w-4 h-4 text-blue-600" />
@@ -393,7 +465,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
             ref={fileInputRef}
             type="file"
             multiple
-            accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
+            accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx,audio/*,.mp3,.wav,.m4a,.ogg,.flac,.aac"
             onChange={handleFileUpload}
             className="hidden"
           />

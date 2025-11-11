@@ -26,3 +26,11 @@ recovery_file*.dat
 
 # Logs
 *.log
+
+.vercel
+
+# Qdrant storage
+qdrant_storage/
+
+# Opus workflows (if exported locally)
+workflows/*.json.local

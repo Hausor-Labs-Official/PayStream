@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllEmployees, getSupabaseClient } from '@/lib/supabase';
+import { upsertEmployee, EmployeePayload } from '@/services/vector-search';
 
 export const dynamic = 'force-dynamic';
 
@@ -125,6 +126,28 @@ export async function POST(request: NextRequest) {
         },
         { status: 500 }
       );
+    }
+
+    // Sync to Qdrant for semantic search (non-blocking)
+    try {
+      const employeePayload: EmployeePayload = {
+        employeeId: newEmployee.id.toString(),
+        name: newEmployee.name,
+        email: newEmployee.email,
+        role: newEmployee.role || 'Employee',
+        department: newEmployee.department || 'General',
+        skills: newEmployee.skills || [],
+        walletAddress: newEmployee.wallet_address || undefined,
+        text: `${newEmployee.name} ${newEmployee.email} ${newEmployee.role || ''} ${newEmployee.department || ''}`,
+      };
+
+      // Sync to vector database (don't await - fire and forget)
+      upsertEmployee(employeePayload).catch((err) => {
+        console.error('Failed to sync employee to Qdrant:', err);
+      });
+    } catch (syncError) {
+      // Don't fail the request if vector sync fails
+      console.error('Error syncing to Qdrant:', syncError);
     }
 
     return NextResponse.json({

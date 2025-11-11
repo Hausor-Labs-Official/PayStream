@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:apis": "npx tsx scripts/test-all-apis.ts",
+    "test:qdrant": "npx tsx scripts/test-qdrant-integration.ts",
+    "test:integration": "npx tsx scripts/test-paystream-integration.ts",
+    "test:multimodal": "npx tsx scripts/test-gemini-multimodal.ts",
+    "test:router": "npx tsx scripts/test-model-router.ts",
+    "test:workflows": "npx tsx scripts/test-opus-workflows.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.42",
@@ -26,6 +32,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@lottiefiles/dotlottie-react": "^0.17.7",
     "@noble/hashes": "^2.0.1",
+    "@qdrant/js-client-rest": "^1.15.1",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-avatar": "^1.1.11",
