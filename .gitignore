@@ -34,3 +34,5 @@ qdrant_storage/
 
 # Opus workflows (if exported locally)
 workflows/*.json.local
+
+.vercel

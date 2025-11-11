@@ -21,6 +21,7 @@ import {
   Repeat,
   FileChartLine,
   ArrowDownUp,
+  Search,
 } from 'lucide-react';
 import {
   Tooltip,
@@ -38,6 +39,7 @@ interface NavItem {
 
 interface SidebarProps {
   collapsed: boolean;
+  onSearchClick: () => void;
 }
 
 const navigation: NavItem[] = [
@@ -78,7 +80,7 @@ const navigation: NavItem[] = [
   },
 ];
 
-export default function Sidebar({ collapsed }: SidebarProps) {
+export default function Sidebar({ collapsed, onSearchClick }: SidebarProps) {
   const pathname = usePathname();
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
 
@@ -132,6 +134,34 @@ export default function Sidebar({ collapsed }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="p-2 space-y-1 overflow-y-auto h-[calc(100vh-4rem)]">
+          {/* Search Button */}
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onSearchClick}
+                  className="flex items-center justify-center h-10 w-full rounded-lg transition-colors text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p>Search Employees</p>
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={onSearchClick}
+              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]"
+            >
+              <Search className="w-4 h-4" />
+              <span className="font-normal">Search</span>
+            </button>
+          )}
+
+          {/* Divider */}
+          <div className="my-2 border-b border-gray-200" />
+
           {navigation.map((item, index) => {
             const isActive = pathname === item.href;
             const isExpanded = expandedItems.includes(item.name);
