@@ -160,7 +160,7 @@ export default function WorkflowApprovalsPage() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            🔍 Workflow Approvals Dashboard
+            Workflow Approvals Dashboard
           </h1>
           <p className="text-lg text-gray-600">
             Review and approve pending workflows with AI-powered decision support
@@ -276,7 +276,7 @@ export default function WorkflowApprovalsPage() {
                   {/* Flags */}
                   {selectedReview.flags && selectedReview.flags.length > 0 && (
                     <div className="mb-6">
-                      <h3 className="font-semibold text-gray-900 mb-3">⚠️ Flags Raised:</h3>
+                      <h3 className="font-semibold text-gray-900 mb-3">Flags Raised:</h3>
                       <div className="space-y-2">
                         {selectedReview.flags.map((flag, idx) => (
                           <div

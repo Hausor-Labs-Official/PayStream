@@ -82,7 +82,7 @@ export default function Dashboard({ initialEmployees }: DashboardProps) {
       {/* Header */}
       <div style={{ marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-          💼 Paystream AI Dashboard
+          Paystream AI Dashboard
         </h1>
         <p style={{ color: '#666' }}>AI-powered payroll on Arc Testnet with USDC</p>
       </div>
@@ -147,7 +147,7 @@ export default function Dashboard({ initialEmployees }: DashboardProps) {
             fontWeight: 'bold',
           }}
         >
-          📁 Onboard CSV
+          Onboard CSV
         </button>
 
         <button
@@ -163,7 +163,7 @@ export default function Dashboard({ initialEmployees }: DashboardProps) {
             fontWeight: 'bold',
           }}
         >
-          {isProcessing ? '⏳ Processing...' : `💸 Run Payroll (${pendingCount})`}
+          {isProcessing ? 'Processing...' : `Run Payroll (${pendingCount})`}
         </button>
       </div>
 
@@ -179,7 +179,7 @@ export default function Dashboard({ initialEmployees }: DashboardProps) {
           }}
         >
           <h3 style={{ color: '#10b981', marginBottom: '1rem' }}>
-            ✅ Payroll Processing Complete!
+            Payroll Processing Complete!
           </h3>
           <div style={{ marginBottom: '0.5rem' }}>
             <strong>Paid:</strong> {processingResult.paid} employees
@@ -312,7 +312,7 @@ export default function Dashboard({ initialEmployees }: DashboardProps) {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ marginBottom: '1rem' }}>📁 Onboard Employees</h2>
+            <h2 style={{ marginBottom: '1rem' }}>Onboard Employees</h2>
             <p style={{ marginBottom: '1.5rem', color: '#666' }}>
               Upload a CSV file with employee data. Required columns: name, email, salary_usd
             </p>

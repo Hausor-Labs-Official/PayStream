@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(request: Request) {
   try {
-    console.log('🚀 Starting payroll processing...\n');
+    console.log('Starting payroll processing...\n');
 
     // Step 1: Get pending employees
     const pendingEmployees = await getPendingEmployees();
@@ -24,14 +24,14 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`📋 Found ${pendingEmployees.length} pending employees`);
+    console.log(`Found ${pendingEmployees.length} pending employees`);
 
     // Step 1.5: Calculate total payroll needed and check USDC balance
     // Fixed payroll: 1.0 USDC per employee
     const FIXED_PAY_PER_EMPLOYEE = 1.0;
     const estimatedTotalPayroll = pendingEmployees.length * FIXED_PAY_PER_EMPLOYEE;
 
-    console.log(`💰 Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC`);
+    console.log(`Estimated total payroll: $${estimatedTotalPayroll.toFixed(2)} USDC`);
 
     // Import dynamically to avoid circular dependencies
     const { ExecutorAgent } = await import('@/lib/executor-agent');
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
     try {
       const usdcBalance = await executorAgent.getUSDCBalance();
-      console.log(`💵 Current USDC balance: $${usdcBalance.toFixed(2)}`);
+      console.log(`Current USDC balance: $${usdcBalance.toFixed(2)}`);
 
       if (usdcBalance < estimatedTotalPayroll) {
         const shortfall = estimatedTotalPayroll - usdcBalance;
@@ -56,9 +56,9 @@ export async function POST(request: Request) {
         }, { status: 400 });
       }
 
-      console.log(`✓ USDC balance sufficient for payroll`);
+      console.log(`USDC balance sufficient for payroll`);
     } catch (balanceError) {
-      console.warn(`⚠️  Could not verify USDC balance: ${(balanceError as Error).message}`);
+      console.warn(`Could not verify USDC balance: ${(balanceError as Error).message}`);
       // Continue processing but log the warning
     }
 
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     const payrollResults: PayrollResult[] = [];
     const batchPaymentEmployees: BatchPaymentEmployee[] = [];
 
-    console.log('\n💰 Calculating payroll...');
+    console.log('\nCalculating payroll...');
 
     for (const employee of pendingEmployees) {
       try {
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
         const estimatedTax = 0; // No tax for fixed payment
         const netPay = grossPay;
 
-        console.log(`   💵 ${employee.name}: $${netPay.toFixed(2)} USDC (fixed payment)`);
+        console.log(`   ${employee.name}: $${netPay.toFixed(2)} USDC (fixed payment)`);
 
         // Create payroll result with fixed payment amounts
         const payrollResult: PayrollResult = {
@@ -109,14 +109,14 @@ export async function POST(request: Request) {
             net_pay: netPay,
           });
         } else {
-          console.warn(`   ⚠️  Employee ${employee.name} has no wallet address`);
+          console.warn(`   Employee ${employee.name} has no wallet address`);
         }
       } catch (error) {
-        console.error(`   ❌ Failed to calculate payroll for ${employee.name}:`, error);
+        console.error(`   Failed to calculate payroll for ${employee.name}:`, error);
       }
     }
 
-    console.log(`   ✓ Calculated payroll for ${payrollResults.length} employees`);
+    console.log(`   Calculated payroll for ${payrollResults.length} employees`);
 
     // Step 3: Execute batch payment
     if (batchPaymentEmployees.length === 0) {
@@ -127,14 +127,14 @@ export async function POST(request: Request) {
       });
     }
 
-    console.log(`\n💸 Executing batch payment...`);
+    console.log(`\nExecuting batch payment...`);
 
     const paymentResult = await executeBatchPay(batchPaymentEmployees);
 
-    console.log(`   ✓ Payment successful!`);
+    console.log(`   Payment successful!`);
 
     // Step 3.5: Create payment records in database
-    console.log(`\n💾 Creating payment records...`);
+    console.log(`\nCreating payment records...`);
 
     const { getSupabaseClient } = await import('@/lib/supabase');
     const supabase = getSupabaseClient();
@@ -154,17 +154,17 @@ export async function POST(request: Request) {
           });
 
         if (error) {
-          console.error(`   ❌ Failed to create payment record for ${emp.employee_id}:`, error);
+          console.error(`   Failed to create payment record for ${emp.employee_id}:`, error);
         } else {
-          console.log(`   ✓ Payment record created for employee ID: ${emp.employee_id}`);
+          console.log(`   Payment record created for employee ID: ${emp.employee_id}`);
         }
       } catch (dbError) {
-        console.error(`   ❌ Database error for ${emp.employee_id}:`, dbError);
+        console.error(`   Database error for ${emp.employee_id}:`, dbError);
       }
     }
 
     // Step 4: Send email pay stubs
-    console.log(`\n📧 Sending pay stubs...`);
+    console.log(`\nSending pay stubs...`);
 
     let emailsSent = 0;
     for (let i = 0; i < pendingEmployees.length; i++) {
@@ -175,16 +175,16 @@ export async function POST(request: Request) {
         try {
           await sendPayStub(employee, payroll, paymentResult.txHash, paymentResult.explorerUrl);
           emailsSent++;
-          console.log(`   ✓ Sent to ${employee.email}`);
+          console.log(`   Sent to ${employee.email}`);
         } catch (emailError) {
-          console.error(`   ❌ Failed to send to ${employee.email}:`, emailError);
+          console.error(`   Failed to send to ${employee.email}:`, emailError);
         }
       }
     }
 
-    console.log(`   ✓ Sent ${emailsSent} emails`);
+    console.log(`   Sent ${emailsSent} emails`);
 
-    console.log(`\n🎉 Payroll processing complete!`);
+    console.log(`\nPayroll processing complete!`);
 
     // Return success response
     return NextResponse.json({
@@ -199,7 +199,7 @@ export async function POST(request: Request) {
       payrollResults,
     });
   } catch (error) {
-    console.error('\n❌ Payroll processing failed:', error);
+    console.error('\nPayroll processing failed:', error);
 
     return NextResponse.json(
       {
@@ -254,7 +254,7 @@ async function sendPayStub(
 <body>
   <div class="container">
     <div class="header">
-      <h1>💰 Pay Stub - Paystream AI</h1>
+      <h1>Pay Stub - Paystream AI</h1>
       <p>Your payment has been processed!</p>
     </div>
 
@@ -291,7 +291,7 @@ async function sendPayStub(
         <strong class="amount">Net Pay: $${payroll.net_pay.toFixed(2)} USDC</strong>
       </div>
 
-      <h3>🔗 Blockchain Transaction</h3>
+      <h3>Blockchain Transaction</h3>
       <p>Your payment was processed on Arc Testnet blockchain:</p>
 
       <div class="pay-detail">
@@ -317,7 +317,7 @@ async function sendPayStub(
 `;
 
   // Log email details
-  console.log(`\n📧 Pay Stub Email for ${employee.email}:`);
+  console.log(`\nPay Stub Email for ${employee.email}:`);
   console.log(`   Subject: Your Paystream AI Pay Stub - $${payroll.net_pay.toFixed(2)} USDC`);
   console.log(`   Net Pay: $${payroll.net_pay.toFixed(2)}`);
   console.log(`   TX: ${txHash}`);
@@ -329,16 +329,16 @@ async function sendPayStub(
       await transporter.sendMail({
         from: process.env.EMAIL_FROM || '"Paystream AI" <payroll@paystream.ai>',
         to: employee.email,
-        subject: `💰 Pay Stub - Paystream AI - $${payroll.net_pay.toFixed(2)} USDC`,
+        subject: `Pay Stub - Paystream AI - $${payroll.net_pay.toFixed(2)} USDC`,
         html: emailHtml,
       });
-      console.log(`   ✅ Email sent successfully to ${employee.email}`);
+      console.log(`   Email sent successfully to ${employee.email}`);
     } catch (error) {
-      console.error(`   ❌ Failed to send email:`, error);
+      console.error(`   Failed to send email:`, error);
       throw error;
     }
   } else {
-    console.log(`   ⚠️  Email not configured - set EMAIL_HOST, EMAIL_USER, EMAIL_PASS in .env.local`);
+    console.log(`   Email not configured - set EMAIL_HOST, EMAIL_USER, EMAIL_PASS in .env.local`);
   }
 }
 

@@ -139,7 +139,7 @@ export default function IDScanOnboardingPage() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            👤 Employee Onboarding with ID Scan
+            Employee Onboarding with ID Scan
           </h1>
           <p className="text-lg text-gray-600">
             Scan an ID card to automatically extract employee information

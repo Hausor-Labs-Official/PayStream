@@ -66,7 +66,7 @@ export function SemanticSearch() {
     <div className="w-full max-w-4xl mx-auto p-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          🔍 Semantic Employee Search
+          Semantic Employee Search
         </h2>
         <p className="text-gray-600">
           Search by skills, role, or natural language (e.g., &quot;blockchain developer&quot; or &quot;frontend specialist&quot;)
@@ -185,7 +185,7 @@ export function SemanticSearch() {
 
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-900">
-              <strong>💡 Tip:</strong> Semantic search understands meaning, not just keywords.
+              <strong>Tip:</strong> Semantic search understands meaning, not just keywords.
               Try searching for &quot;crypto expert&quot; to find blockchain developers, or &quot;UI specialist&quot; to find frontend engineers.
             </p>
           </div>

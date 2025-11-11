@@ -179,7 +179,7 @@ export async function POST(request: Request) {
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎉 Welcome to Paystream AI!</h1>
+      <h1>Welcome to Paystream AI!</h1>
       <p>Your account has been created successfully</p>
     </div>
 
@@ -194,7 +194,7 @@ export async function POST(request: Request) {
       </p>
 
       <div class="info-box">
-        <h3>🔐 Your Login Credentials</h3>
+        <h3>Your Login Credentials</h3>
 
         <div class="credential-item">
           <div class="credential-label">Email</div>
@@ -215,7 +215,7 @@ export async function POST(request: Request) {
       </div>
 
       <div class="security-note">
-        <strong>⚠️ Security Notice:</strong> Please change your password after your first login for security purposes.
+        <strong>Security Notice:</strong> Please change your password after your first login for security purposes.
       </div>
 
       <div style="text-align: center;">
@@ -225,22 +225,22 @@ export async function POST(request: Request) {
       </div>
 
       <div class="info-box">
-        <h3>✨ What You Can Do</h3>
+        <h3>What You Can Do</h3>
         <div class="features">
           <div class="feature-item">
-            <span class="feature-icon">💰</span>
+            <span class="feature-icon">$</span>
             <strong>View Payments:</strong> Track all your payroll payments and transaction history
           </div>
           <div class="feature-item">
-            <span class="feature-icon">📊</span>
+            <span class="feature-icon">#</span>
             <strong>Financial Insights:</strong> Access detailed pay stubs and financial breakdowns
           </div>
           <div class="feature-item">
-            <span class="feature-icon">🔗</span>
+            <span class="feature-icon">~</span>
             <strong>Blockchain Verified:</strong> All payments are secured on Arc Testnet blockchain
           </div>
           <div class="feature-item">
-            <span class="feature-icon">⚡</span>
+            <span class="feature-icon">*</span>
             <strong>Instant Notifications:</strong> Get real-time updates on all your transactions
           </div>
         </div>
@@ -274,7 +274,7 @@ export async function POST(request: Request) {
 `;
 
     // For testnet, just log the email (don't actually send)
-    console.log(`\n📧 Employee Welcome Email for ${email}:`);
+    console.log(`\nEmployee Welcome Email for ${email}:`);
     console.log(`   Subject: Welcome to Paystream AI - Your Account is Ready!`);
     console.log(`   Email: ${email}`);
     console.log(`   Temp Password: ${tempPassword}`);

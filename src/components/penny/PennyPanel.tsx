@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Mic, Send, MicOff, Sparkles, Paperclip, Image as ImageIcon, FileText, Volume2 } from 'lucide-react';
+import { X, Mic, Send, MicOff, Sparkles, Paperclip, Image as ImageIcon, FileText, Volume2, Circle, Camera, Scan } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import PennyOrb from './PennyOrb';
@@ -47,9 +47,16 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
   const [showAgentMonitor, setShowAgentMonitor] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [isLiveVoiceMode, setIsLiveVoiceMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
     transcript,
@@ -65,10 +72,24 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
   // Update input with transcript
   useEffect(() => {
-    if (transcript) {
+    if (transcript && !isLiveVoiceMode) {
       setInput(transcript);
     }
-  }, [transcript]);
+  }, [transcript, isLiveVoiceMode]);
+
+  // Live voice mode: auto-send after pause
+  useEffect(() => {
+    if (isLiveVoiceMode && transcript && !listening) {
+      // Auto-send transcript after user stops speaking
+      const timer = setTimeout(() => {
+        if (transcript.trim()) {
+          handleSend(transcript);
+          resetTranscript();
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [isLiveVoiceMode, transcript, listening]);
 
   // Initial greeting
   useEffect(() => {
@@ -83,10 +104,173 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     }
   }, [isOpen, user, messages.length]);
 
+  // Recording timer
+  useEffect(() => {
+    if (isRecording) {
+      recordingIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+    } else {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+      setRecordingTime(0);
+    }
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+      }
+    };
+  }, [isRecording]);
+
   const detectAgentCommand = (text: string): boolean => {
     const payrollCommands = ['run payroll', 'process payroll', 'execute payroll', 'pay employees'];
     const lowerText = text.toLowerCase();
     return payrollCommands.some(cmd => lowerText.includes(cmd));
+  };
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+
+        // Convert to base64 for transcription
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+          const base64Audio = (reader.result as string).split(',')[1];
+
+          toast.loading('Transcribing audio...', { id: 'record-transcribe' });
+
+          try {
+            const response = await fetch('/api/audio/transcribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                audio: base64Audio,
+                mimeType: 'audio/webm',
+              }),
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+              toast.success('Audio transcribed!', { id: 'record-transcribe' });
+              setInput(prev => prev ? `${prev}\n\n${data.transcription}` : data.transcription);
+            } else {
+              toast.error('Transcription failed', { id: 'record-transcribe' });
+            }
+          } catch (error) {
+            console.error('Transcription error:', error);
+            toast.error('Error transcribing audio', { id: 'record-transcribe' });
+          }
+        };
+        reader.readAsDataURL(audioBlob);
+
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast.success('Recording started');
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      toast.error('Failed to start recording. Please check microphone permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+      toast.success('Recording stopped');
+    }
+  };
+
+  const toggleLiveVoiceMode = () => {
+    if (isLiveVoiceMode) {
+      // Stop live voice mode
+      SpeechRecognition.stopListening();
+      setIsLiveVoiceMode(false);
+      toast.success('Live voice mode disabled');
+    } else {
+      // Start live voice mode
+      if (!browserSupportsSpeechRecognition) {
+        toast.error('Your browser does not support speech recognition');
+        return;
+      }
+      resetTranscript();
+      SpeechRecognition.startListening({ continuous: true });
+      setIsLiveVoiceMode(true);
+      toast.success('Live voice mode enabled - speak to Penny!');
+    }
+  };
+
+  const handleCameraCapture = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const result = e.target?.result as string;
+      const base64 = result.split(',')[1];
+
+      toast.loading('Scanning document with OCR...', { id: 'ocr-scan' });
+
+      try {
+        const response = await fetch('/api/scan/document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: base64,
+            mimeType: file.type,
+            documentType: 'general',
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          toast.success('Document scanned!', { id: 'ocr-scan' });
+
+          // Format extracted data
+          const extractedText = data.data?.text || JSON.stringify(data.data, null, 2);
+          setInput(prev => prev ? `${prev}\n\nScanned Document:\n${extractedText}` : `Scanned Document:\n${extractedText}`);
+
+          // Add image as attachment
+          const attachment: MessageAttachment = {
+            type: 'image',
+            name: file.name,
+            url: result,
+            mimeType: file.type,
+          };
+          setAttachments(prev => [...prev, attachment]);
+        } else {
+          toast.error('OCR failed', { id: 'ocr-scan' });
+        }
+      } catch (error) {
+        console.error('OCR error:', error);
+        toast.error('Error scanning document', { id: 'ocr-scan' });
+      }
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,8 +349,8 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSend = async () => {
-    const messageText = input.trim();
+  const handleSend = async (overrideText?: string) => {
+    const messageText = (overrideText || input).trim();
     if ((!messageText && attachments.length === 0) || isLoading) return;
 
     setShowSuggestions(false);
@@ -233,9 +417,10 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Play audio if available
-      if (data.audioUrl) {
-        playAudio(data.audioUrl);
+      // Play audio if available or in live voice mode
+      if (data.audioUrl || isLiveVoiceMode) {
+        const textToSpeak = assistantMessage.content;
+        speakText(textToSpeak);
       }
     } catch (error) {
       const errorMessage: Message = {
@@ -277,6 +462,24 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     });
   };
 
+  const speakText = (text: string) => {
+    if ('speechSynthesis' in window) {
+      // Cancel any ongoing speech
+      window.speechSynthesis.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+
+      utterance.onstart = () => setIsPlaying(true);
+      utterance.onend = () => setIsPlaying(false);
+      utterance.onerror = () => setIsPlaying(false);
+
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   const toggleVoiceInput = () => {
     if (listening) {
       SpeechRecognition.stopListening();
@@ -284,6 +487,12 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
       resetTranscript();
       SpeechRecognition.startListening({ continuous: true });
     }
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (!isOpen) return null;
@@ -297,11 +506,13 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           <div className="relative">
             {/* Rive Orb */}
             <PennyOrb size={40} isSpeaking={isPlaying} preset={7} />
-            <div className={`absolute bottom-0 right-0 w-3 h-3 ${isPlaying ? 'bg-blue-400' : 'bg-green-400'} rounded-full animate-pulse border-2 border-white`} />
+            <div className={`absolute bottom-0 right-0 w-3 h-3 ${isPlaying ? 'bg-blue-400' : isLiveVoiceMode ? 'bg-purple-400 animate-pulse' : 'bg-green-400'} rounded-full border-2 border-white`} />
           </div>
           <div>
             <h3 className="font-semibold text-black">Penny</h3>
-            <p className="text-xs text-[#737E9C]">AI Payroll Assistant</p>
+            <p className="text-xs text-[#737E9C]">
+              {isLiveVoiceMode ? 'Live Voice Mode' : 'AI Payroll Assistant'}
+            </p>
           </div>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-lg transition-colors">
@@ -402,6 +613,28 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       {/* Input */}
       <div className="border-t border-gray-200 p-4 bg-white">
+        {/* Recording indicator */}
+        {isRecording && (
+          <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
+            <Circle className="w-3 h-3 fill-red-500 text-red-500 animate-pulse" />
+            <span className="text-sm font-medium text-red-700">Recording: {formatRecordingTime(recordingTime)}</span>
+          </div>
+        )}
+
+        {/* Live voice mode indicator */}
+        {isLiveVoiceMode && (
+          <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
+            <Mic className="w-4 h-4 text-purple-600 animate-pulse" />
+            <span className="text-sm font-medium text-purple-700">Live Voice Mode Active</span>
+            <button
+              onClick={toggleLiveVoiceMode}
+              className="ml-auto text-xs text-purple-600 hover:text-purple-800 font-medium"
+            >
+              Disable
+            </button>
+          </div>
+        )}
+
         {/* Attachment Preview */}
         {attachments.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
@@ -460,7 +693,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 mb-2">
           <input
             ref={fileInputRef}
             type="file"
@@ -469,14 +702,57 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
             onChange={handleFileUpload}
             className="hidden"
           />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            onChange={handleCameraCapture}
+            className="hidden"
+          />
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-12 h-12 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors text-[#737E9C]"
+            className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors text-[#737E9C]"
             aria-label="Attach file"
-            disabled={isLoading}
+            disabled={isLoading || isRecording}
+            title="Upload file"
           >
-            <Paperclip className="w-5 h-5" />
+            <Paperclip className="w-4 h-4" />
           </button>
+          <button
+            onClick={() => cameraInputRef.current?.click()}
+            className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors text-[#737E9C]"
+            aria-label="Scan document with OCR"
+            disabled={isLoading || isRecording}
+            title="Scan document with OCR"
+          >
+            <Scan className="w-4 h-4" />
+          </button>
+          <button
+            onClick={isRecording ? stopRecording : startRecording}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              isRecording ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-[#737E9C] hover:bg-gray-300'
+            }`}
+            aria-label={isRecording ? 'Stop recording' : 'Record audio'}
+            disabled={isLoading}
+            title={isRecording ? 'Stop recording' : 'Record audio'}
+          >
+            {isRecording ? <Circle className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={toggleLiveVoiceMode}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+              isLiveVoiceMode ? 'bg-purple-500 text-white hover:bg-purple-600' : 'bg-gray-200 text-[#737E9C] hover:bg-gray-300'
+            }`}
+            aria-label={isLiveVoiceMode ? 'Disable live voice' : 'Enable live voice'}
+            disabled={isLoading || isRecording || !browserSupportsSpeechRecognition}
+            title={isLiveVoiceMode ? 'Disable live voice mode' : 'Enable live voice mode'}
+          >
+            <Volume2 className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -486,25 +762,26 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                 handleSend();
               }
             }}
-            placeholder={listening ? 'Listening...' : 'Ask Penny...'}
+            placeholder={isRecording ? 'Recording...' : listening ? 'Listening...' : isLiveVoiceMode ? 'Speak to Penny...' : 'Ask Penny...'}
             className="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-[#0044FF] focus:border-[#0044FF] outline-none"
             rows={1}
-            disabled={isLoading}
+            disabled={isLoading || isRecording || isLiveVoiceMode}
           />
-          {browserSupportsSpeechRecognition && (
+          {browserSupportsSpeechRecognition && !isLiveVoiceMode && (
             <button
               onClick={toggleVoiceInput}
               className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                 listening ? 'bg-red-500 text-white' : 'bg-gray-200 text-[#737E9C] hover:bg-gray-300'
               }`}
               aria-label={listening ? 'Stop listening' : 'Start voice input'}
+              disabled={isRecording}
             >
               {listening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
             </button>
           )}
           <button
-            onClick={handleSend}
-            disabled={(!input.trim() && attachments.length === 0) || isLoading}
+            onClick={() => handleSend()}
+            disabled={(!input.trim() && attachments.length === 0) || isLoading || isRecording || isLiveVoiceMode}
             className="w-12 h-12 bg-[#0044FF] rounded-xl flex items-center justify-center hover:bg-[#0033CC] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Send message"
           >

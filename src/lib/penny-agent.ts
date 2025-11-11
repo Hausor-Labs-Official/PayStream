@@ -258,7 +258,7 @@ Respond in JSON format:
     };
 
     return {
-      text: `📊 Payroll Statistics:
+      text: `Payroll Statistics:
 • Total Employees: ${total}
 • Average Salary: $${avgSalary.toFixed(2)}
 • Total Annual Payroll: $${totalPayroll.toLocaleString()}
@@ -284,7 +284,7 @@ Respond in JSON format:
         const totalFunded = onrampTxs.reduce((sum: number, tx: any) => sum + (tx.amount_usd || 0), 0);
 
         return {
-          text: `💰 Recent Transactions:
+          text: `Recent Transactions:
 • Total Transactions: ${onrampTxs.length}
 • Total Funded: $${totalFunded.toFixed(2)}
 • Latest: ${onrampTxs[0].status} - $${onrampTxs[0].amount_usd}`,
@@ -303,7 +303,7 @@ Respond in JSON format:
         const balanceFormatted = parseFloat(ethers.formatEther(balance));
 
         return {
-          text: `💵 Arc Testnet Balance:
+          text: `Arc Testnet Balance:
 • Address: ${wallet.address}
 • Balance: ${balanceFormatted.toFixed(2)} USDC
 • Network: Arc Testnet`,
@@ -344,7 +344,7 @@ Respond in JSON format:
       .join('\n');
 
     return {
-      text: `👥 Recent Employees:\n\n${employeeList}`,
+      text: `Recent Employees:\n\n${employeeList}`,
       data: employees,
       sql,
     };
@@ -374,7 +374,7 @@ Respond in JSON format:
 
 Your Personality:
 - Warm, conversational, and genuinely helpful
-- Use natural language and occasional emojis (💰, 📊, 👥, ✨, etc.)
+- Use natural language without emojis
 - Explain things clearly without being overly technical unless asked
 - Proactive in suggesting insights and actions
 
@@ -400,7 +400,7 @@ Be conversational, provide context, and when appropriate, suggest related action
       max_tokens: 600,
     });
 
-    const text = completion.choices[0]?.message?.content || "I'm here to help with your payroll! Ask me anything. 😊";
+    const text = completion.choices[0]?.message?.content || "I'm here to help with your payroll! Ask me anything.";
 
     return { text };
   }

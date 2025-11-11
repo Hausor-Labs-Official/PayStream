@@ -176,7 +176,7 @@ export default function AddEmployeeDialog({ onSuccess }: AddEmployeeDialogProps)
           console.warn('Failed to send welcome email:', emailData.error);
           // Don't fail the entire process if email fails
         } else {
-          console.log('✅ Welcome email sent successfully');
+          console.log('Welcome email sent successfully');
         }
 
         updateStepStatus('email', 'completed');

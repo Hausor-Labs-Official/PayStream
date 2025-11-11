@@ -159,7 +159,7 @@ export default function ExpenseScanPage() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            💳 Expense Scanning with AI
+            Expense Scanning with AI
           </h1>
           <p className="text-lg text-gray-600">
             Scan receipts and invoices to automatically extract expense information
@@ -278,19 +278,19 @@ export default function ExpenseScanPage() {
         {/* Features */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white rounded-lg p-6 shadow-md">
-            <h4 className="font-semibold text-gray-900 mb-2">⚡ Instant Extraction</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Instant Extraction</h4>
             <p className="text-sm text-gray-600">
               AI extracts vendor, amount, date, items, and tax in seconds
             </p>
           </div>
           <div className="bg-white rounded-lg p-6 shadow-md">
-            <h4 className="font-semibold text-gray-900 mb-2">✅ Auto-Categorization</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Auto-Categorization</h4>
             <p className="text-sm text-gray-600">
               Automatically suggests expense categories based on vendor
             </p>
           </div>
           <div className="bg-white rounded-lg p-6 shadow-md">
-            <h4 className="font-semibold text-gray-900 mb-2">📊 Workflow Integration</h4>
+            <h4 className="font-semibold text-gray-900 mb-2">Workflow Integration</h4>
             <p className="text-sm text-gray-600">
               Expenses automatically routed for approval based on amount
             </p>

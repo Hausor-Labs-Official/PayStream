@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const payload = JSON.parse(rawBody);
     const event = parseWebhookEvent(payload);
 
-    console.log('📥 Circle On-Ramp Webhook:', {
+    console.log('Circle On-Ramp Webhook:', {
       type: event.type,
       sessionId: event.sessionId,
       status: event.status,
@@ -129,7 +129,7 @@ export async function POST(request: NextRequest) {
  * Handle completed on-ramp session
  */
 async function handleOnRampCompleted(event: any) {
-  console.log('✅ On-ramp completed:', {
+  console.log('On-ramp completed:', {
     sessionId: event.sessionId,
     amount: event.amount,
     txHash: event.transactionHash,
@@ -158,7 +158,7 @@ async function handleOnRampCompleted(event: any) {
 
     // Trigger automatic payroll execution
     // This will be picked up by the dashboard to refresh balance
-    console.log('💰 Funds received. Ready to execute payroll.');
+    console.log('Funds received. Ready to execute payroll.');
   } catch (error) {
     console.error('Error handling completed on-ramp:', error);
   }
@@ -168,7 +168,7 @@ async function handleOnRampCompleted(event: any) {
  * Handle failed on-ramp session
  */
 async function handleOnRampFailed(event: any) {
-  console.log('❌ On-ramp failed:', {
+  console.log('On-ramp failed:', {
     sessionId: event.sessionId,
     amount: event.amount,
   });
@@ -200,7 +200,7 @@ async function handleOnRampFailed(event: any) {
  * Handle pending on-ramp session
  */
 async function handleOnRampPending(event: any) {
-  console.log('⏳ On-ramp pending:', {
+  console.log('On-ramp pending:', {
     sessionId: event.sessionId,
     amount: event.amount,
   });

@@ -64,7 +64,7 @@ export class ExecutorAgent {
       throw new Error('No employees to pay');
     }
 
-    console.log(`💰 Executing batch payment for ${employees.length} employees...`);
+    console.log(`Executing batch payment for ${employees.length} employees...`);
 
     try {
       // Prepare arrays for batch payment
@@ -95,7 +95,7 @@ export class ExecutorAgent {
         totalAmount += emp.net_pay;
       }
 
-      console.log(`📊 Payment Summary:`);
+      console.log(`Payment Summary:`);
       console.log(`   Employees: ${employees.length}`);
       console.log(`   Total: $${totalAmount.toFixed(2)} USDC`);
 
@@ -107,7 +107,7 @@ export class ExecutorAgent {
       const balance = await provider.getBalance(this.signer.address);
       const balanceFormatted = parseFloat(ethers.formatEther(balance));
 
-      console.log(`\n💵 Native USDC Balance: ${balanceFormatted.toFixed(2)}`);
+      console.log(`\nNative USDC Balance: ${balanceFormatted.toFixed(2)}`);
 
       if (balanceFormatted < totalAmount) {
         throw new Error(
@@ -116,7 +116,7 @@ export class ExecutorAgent {
       }
 
       // Step 2: Execute batch payment with native USDC (with retry logic)
-      console.log(`\n💸 Executing batch payment...`);
+      console.log(`\nExecuting batch payment...`);
       const totalAmountWei = ethers.parseUnits(totalAmount.toFixed(6), 6);
 
       let batchTx;
@@ -143,10 +143,10 @@ export class ExecutorAgent {
 
           // Check if it's a rate limit or nonce error
           if (errorMsg.includes('rate limit') || errorMsg.includes('request limit')) {
-            console.log(`   ⚠️  Rate limit hit, waiting 2 seconds...`);
+            console.log(`   Rate limit hit, waiting 2 seconds...`);
             await new Promise(resolve => setTimeout(resolve, 2000));
           } else if (errorMsg.includes('nonce') || errorMsg.includes('already been used')) {
-            console.log(`   ⚠️  Nonce error, retrying with fresh nonce...`);
+            console.log(`   Nonce error, retrying with fresh nonce...`);
             await new Promise(resolve => setTimeout(resolve, 1000));
           } else if (retryCount >= maxRetries) {
             throw error; // Re-throw if max retries reached and not a known error
@@ -158,15 +158,15 @@ export class ExecutorAgent {
         throw new Error('Failed to submit transaction after multiple retries');
       }
 
-      console.log(`   ⏳ Waiting for confirmation...`);
+      console.log(`   Waiting for confirmation...`);
       const receipt = await batchTx.wait();
 
-      console.log(`   ✅ Payment confirmed!`);
+      console.log(`   Payment confirmed!`);
       console.log(`   Block: ${receipt.blockNumber}`);
       console.log(`   Gas Used: ${receipt.gasUsed.toString()}`);
 
       // Step 4: Update database
-      console.log(`\n📝 Updating employee records...`);
+      console.log(`\nUpdating employee records...`);
 
       for (const emp of employees) {
         try {
@@ -178,7 +178,7 @@ export class ExecutorAgent {
         }
       }
 
-      console.log(`   ✓ Updated ${employees.length} records`);
+      console.log(`   Updated ${employees.length} records`);
 
       // Create result
       const result: BatchPaymentResult = {
@@ -190,12 +190,12 @@ export class ExecutorAgent {
         blockNumber: receipt.blockNumber,
       };
 
-      console.log(`\n🎉 Batch payment complete!`);
+      console.log(`\nBatch payment complete!`);
       console.log(`   Explorer: ${result.explorerUrl}`);
 
       return result;
     } catch (error) {
-      console.error('❌ Batch payment failed:', error);
+      console.error('Batch payment failed:', error);
       throw new Error(`Batch payment execution failed: ${(error as Error).message}`);
     }
   }
