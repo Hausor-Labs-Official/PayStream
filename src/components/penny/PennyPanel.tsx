@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { X, Mic, Send, MicOff, Sparkles, Paperclip, Image as ImageIcon, FileText, Volume2, Circle, Camera, Scan } from 'lucide-react';
+import { X, Mic, Send, Sparkles, Paperclip, FileText, Volume2, Circle, Scan, MicOff } from 'lucide-react';
 import { useUser } from '@clerk/nextjs';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import PennyOrb from './PennyOrb';
@@ -33,8 +33,8 @@ interface PennyPanelProps {
 const PROMPT_SUGGESTIONS = [
   'Run payroll for this month',
   'Show me employee status',
+  'Search for developers',
   'Check treasury balance',
-  'Onboard new employee',
   'Review recent transactions',
 ];
 
@@ -80,7 +80,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
   // Live voice mode: auto-send after pause
   useEffect(() => {
     if (isLiveVoiceMode && transcript && !listening) {
-      // Auto-send transcript after user stops speaking
       const timer = setTimeout(() => {
         if (transcript.trim()) {
           handleSend(transcript);
@@ -97,7 +96,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
       const greeting: Message = {
         id: Date.now().toString(),
         role: 'assistant',
-        content: `Hello${user?.firstName ? ` ${user.firstName}` : ''}! I'm Penny, your AI payroll assistant. How can I help you with payroll today?`,
+        content: `Hello${user?.firstName ? ` ${user.firstName}` : ''}! I'm Penny, your AI payroll assistant. I can help you with payroll, employee searches, document scanning, and more. Try using voice, text, or upload documents!`,
         timestamp: new Date(),
       };
       setMessages([greeting]);
@@ -144,9 +143,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
 
-        // Convert to base64 for transcription
         const reader = new FileReader();
         reader.onloadend = async () => {
           const base64Audio = (reader.result as string).split(',')[1];
@@ -178,7 +175,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
         };
         reader.readAsDataURL(audioBlob);
 
-        // Stop all tracks
         stream.getTracks().forEach(track => track.stop());
       };
 
@@ -201,12 +197,10 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
   const toggleLiveVoiceMode = () => {
     if (isLiveVoiceMode) {
-      // Stop live voice mode
       SpeechRecognition.stopListening();
       setIsLiveVoiceMode(false);
       toast.success('Live voice mode disabled');
     } else {
-      // Start live voice mode
       if (!browserSupportsSpeechRecognition) {
         toast.error('Your browser does not support speech recognition');
         return;
@@ -245,11 +239,9 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
         if (data.success) {
           toast.success('Document scanned!', { id: 'ocr-scan' });
 
-          // Format extracted data
           const extractedText = data.data?.text || JSON.stringify(data.data, null, 2);
           setInput(prev => prev ? `${prev}\n\nScanned Document:\n${extractedText}` : `Scanned Document:\n${extractedText}`);
 
-          // Add image as attachment
           const attachment: MessageAttachment = {
             type: 'image',
             name: file.name,
@@ -267,7 +259,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     };
     reader.readAsDataURL(file);
 
-    // Reset input
     if (cameraInputRef.current) {
       cameraInputRef.current.value = '';
     }
@@ -284,7 +275,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
       const file = files[i];
       const isAudio = file.type.startsWith('audio/');
 
-      // Convert file to base64 data URL
       const reader = new FileReader();
       reader.onload = async (e) => {
         const result = e.target?.result as string;
@@ -297,7 +287,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           mimeType: file.type,
         };
 
-        // Transcribe audio files
         if (isAudio) {
           toast.loading(`Transcribing ${file.name}...`, { id: `transcribe-${i}` });
           try {
@@ -315,8 +304,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
             if (data.success) {
               attachment.transcription = data.transcription;
               toast.success(`Transcribed ${file.name}`, { id: `transcribe-${i}` });
-
-              // Auto-fill input with transcription
               setInput(prev => prev ? `${prev}\n\n${data.transcription}` : data.transcription);
             } else {
               toast.error(`Failed to transcribe ${file.name}`, { id: `transcribe-${i}` });
@@ -330,7 +317,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
         newAttachments.push(attachment);
         processedCount++;
 
-        // Update attachments when all files are processed
         if (processedCount === files.length) {
           setAttachments(prev => [...prev, ...newAttachments]);
         }
@@ -339,7 +325,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
       reader.readAsDataURL(file);
     }
 
-    // Reset file input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -367,11 +352,9 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     setInput('');
     resetTranscript();
 
-    // Clear attachments after sending
     const currentAttachments = [...attachments];
     setAttachments([]);
 
-    // Check if this is an agent command
     if (detectAgentCommand(messageText)) {
       const agentMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -381,7 +364,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
       };
       setMessages((prev) => [...prev, agentMessage]);
 
-      // Show agent monitor after a brief delay
       setTimeout(() => {
         setShowAgentMonitor(true);
       }, 1000);
@@ -417,7 +399,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Play audio if available or in live voice mode
       if (data.audioUrl || isLiveVoiceMode) {
         const textToSpeak = assistantMessage.content;
         speakText(textToSpeak);
@@ -440,31 +421,8 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     setShowSuggestions(false);
   };
 
-  const playAudio = (url: string) => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    setIsPlaying(true);
-
-    audio.onended = () => {
-      setIsPlaying(false);
-    };
-
-    audio.onerror = () => {
-      setIsPlaying(false);
-    };
-
-    audio.play().catch(() => {
-      setIsPlaying(false);
-    });
-  };
-
   const speakText = (text: string) => {
     if ('speechSynthesis' in window) {
-      // Cancel any ongoing speech
       window.speechSynthesis.cancel();
 
       const utterance = new SpeechSynthesisUtterance(text);
@@ -480,15 +438,6 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
     }
   };
 
-  const toggleVoiceInput = () => {
-    if (listening) {
-      SpeechRecognition.stopListening();
-    } else {
-      resetTranscript();
-      SpeechRecognition.startListening({ continuous: true });
-    }
-  };
-
   const formatRecordingTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -499,42 +448,41 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
   return (
     <>
-      <div className="fixed right-0 top-0 w-[28rem] h-screen bg-white border-l border-gray-200 z-30 flex flex-col">
+      <div className="fixed right-0 top-0 w-[28rem] h-screen bg-white border-l border-gray-200 shadow-2xl z-30 flex flex-col">
       {/* Header */}
-      <div className="h-16 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200 flex items-center justify-between px-4">
+      <div className="h-16 bg-gradient-to-r from-blue-600 to-indigo-600 border-b border-blue-700 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <div className="relative">
-            {/* Rive Orb */}
             <PennyOrb size={40} isSpeaking={isPlaying} preset={7} />
-            <div className={`absolute bottom-0 right-0 w-3 h-3 ${isPlaying ? 'bg-blue-400' : isLiveVoiceMode ? 'bg-purple-400 animate-pulse' : 'bg-green-400'} rounded-full border-2 border-white`} />
+            <div className={`absolute bottom-0 right-0 w-3 h-3 ${isPlaying ? 'bg-blue-300 animate-pulse' : isLiveVoiceMode ? 'bg-purple-400 animate-pulse' : 'bg-green-400'} rounded-full border-2 border-white shadow-lg`} />
           </div>
           <div>
-            <h3 className="font-semibold text-black">Penny</h3>
-            <p className="text-xs text-[#737E9C]">
-              {isLiveVoiceMode ? 'Live Voice Mode' : 'AI Payroll Assistant'}
+            <h3 className="font-semibold text-white">Penny AI</h3>
+            <p className="text-xs text-blue-100">
+              {isLiveVoiceMode ? 'Live Voice Active' : 'Payroll Assistant'}
             </p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-white/50 rounded-lg transition-colors">
-          <X className="w-4 h-4 text-[#737E9C]" />
+        <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+          <X className="w-5 h-5 text-white" />
         </button>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white">
         {/* Prompt Suggestions */}
         {showSuggestions && messages.length <= 1 && (
           <div className="space-y-3 mb-4">
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Sparkles className="w-4 h-4 text-blue-500" />
-              <span className="font-medium">Try these commands:</span>
+            <div className="flex items-center gap-2 text-sm text-gray-700 font-medium">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <span>Try these commands:</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {PROMPT_SUGGESTIONS.map((suggestion, index) => (
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 text-blue-700 rounded-xl text-sm font-medium transition-all hover:shadow-md border border-blue-100"
+                  className="px-3 py-2 bg-white hover:bg-blue-50 text-blue-700 rounded-lg text-sm font-medium transition-all hover:shadow-md border border-blue-200 hover:border-blue-300"
                 >
                   {suggestion}
                 </button>
@@ -549,13 +497,12 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`px-4 py-2 rounded-2xl max-w-[80%] ${
+              className={`px-4 py-3 rounded-2xl max-w-[85%] shadow-sm ${
                 message.role === 'user'
-                  ? 'bg-[#0044FF] text-white rounded-tr-sm'
-                  : 'bg-[#F3F4F6] text-black rounded-tl-sm'
+                  ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-tr-sm'
+                  : 'bg-white text-gray-900 rounded-tl-sm border border-gray-200'
               }`}
             >
-              {/* Attachments */}
               {message.attachments && message.attachments.length > 0 && (
                 <div className="mb-2 space-y-2">
                   {message.attachments.map((attachment, idx) => (
@@ -569,22 +516,22 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                       ) : attachment.type === 'audio' ? (
                         <div className="space-y-2">
                           <div className={`flex items-center gap-2 p-2 rounded-lg ${
-                            message.role === 'user' ? 'bg-blue-600' : 'bg-gray-200'
+                            message.role === 'user' ? 'bg-blue-700' : 'bg-gray-100'
                           }`}>
                             <Volume2 className="w-4 h-4" />
                             <span className="text-xs font-medium truncate">{attachment.name}</span>
                           </div>
                           {attachment.transcription && (
                             <div className={`p-2 rounded-lg text-xs italic ${
-                              message.role === 'user' ? 'bg-blue-500' : 'bg-gray-100'
+                              message.role === 'user' ? 'bg-blue-700/50' : 'bg-gray-50'
                             }`}>
-                              Transcription: {attachment.transcription}
+                              {attachment.transcription}
                             </div>
                           )}
                         </div>
                       ) : (
                         <div className={`flex items-center gap-2 p-2 rounded-lg ${
-                          message.role === 'user' ? 'bg-blue-600' : 'bg-gray-200'
+                          message.role === 'user' ? 'bg-blue-700' : 'bg-gray-100'
                         }`}>
                           <FileText className="w-4 h-4" />
                           <span className="text-xs font-medium truncate">{attachment.name}</span>
@@ -594,8 +541,8 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                   ))}
                 </div>
               )}
-              <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-              <p className={`text-xs mt-1 ${message.role === 'user' ? 'text-blue-100' : 'text-[#737E9C]'}`}>
+              <p className="text-sm whitespace-pre-wrap leading-relaxed">{message.content}</p>
+              <p className={`text-xs mt-2 ${message.role === 'user' ? 'text-blue-100' : 'text-gray-500'}`}>
                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
@@ -611,9 +558,9 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input Area */}
       <div className="border-t border-gray-200 p-4 bg-white">
-        {/* Recording indicator */}
+        {/* Status Indicators */}
         {isRecording && (
           <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-red-50 border border-red-200 rounded-lg">
             <Circle className="w-3 h-3 fill-red-500 text-red-500 animate-pulse" />
@@ -621,16 +568,15 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           </div>
         )}
 
-        {/* Live voice mode indicator */}
         {isLiveVoiceMode && (
           <div className="mb-3 flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-200 rounded-lg">
             <Mic className="w-4 h-4 text-purple-600 animate-pulse" />
-            <span className="text-sm font-medium text-purple-700">Live Voice Mode Active</span>
+            <span className="text-sm font-medium text-purple-700">Live Voice Mode - Speak naturally</span>
             <button
               onClick={toggleLiveVoiceMode}
-              className="ml-auto text-xs text-purple-600 hover:text-purple-800 font-medium"
+              className="ml-auto text-xs text-purple-600 hover:text-purple-800 font-medium px-2 py-1 hover:bg-purple-100 rounded"
             >
-              Disable
+              Stop
             </button>
           </div>
         )}
@@ -649,7 +595,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                     />
                     <button
                       onClick={() => removeAttachment(index)}
-                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -693,7 +639,8 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           </div>
         )}
 
-        <div className="flex gap-2 mb-2">
+        {/* Action Buttons Row */}
+        <div className="grid grid-cols-4 gap-2 mb-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -710,48 +657,57 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
             onChange={handleCameraCapture}
             className="hidden"
           />
+
           <button
             onClick={() => fileInputRef.current?.click()}
-            className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors text-[#737E9C]"
-            aria-label="Attach file"
+            className="flex flex-col items-center justify-center h-16 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50"
             disabled={isLoading || isRecording}
-            title="Upload file"
+            title="Upload files (images, audio, documents)"
           >
-            <Paperclip className="w-4 h-4" />
+            <Paperclip className="w-5 h-5 text-gray-700 mb-1" />
+            <span className="text-[10px] text-gray-600 font-medium">Upload</span>
           </button>
+
           <button
             onClick={() => cameraInputRef.current?.click()}
-            className="w-10 h-10 bg-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-300 transition-colors text-[#737E9C]"
-            aria-label="Scan document with OCR"
+            className="flex flex-col items-center justify-center h-16 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-50"
             disabled={isLoading || isRecording}
-            title="Scan document with OCR"
+            title="Scan documents with OCR"
           >
-            <Scan className="w-4 h-4" />
+            <Scan className="w-5 h-5 text-gray-700 mb-1" />
+            <span className="text-[10px] text-gray-600 font-medium">OCR Scan</span>
           </button>
+
           <button
             onClick={isRecording ? stopRecording : startRecording}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-              isRecording ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-gray-200 text-[#737E9C] hover:bg-gray-300'
+            className={`flex flex-col items-center justify-center h-16 rounded-xl transition-colors ${
+              isRecording
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
-            aria-label={isRecording ? 'Stop recording' : 'Record audio'}
-            disabled={isLoading}
+            disabled={isLoading || isLiveVoiceMode}
             title={isRecording ? 'Stop recording' : 'Record audio'}
           >
-            {isRecording ? <Circle className="w-4 h-4 fill-current" /> : <Mic className="w-4 h-4" />}
+            {isRecording ? <Circle className="w-5 h-5 fill-current mb-1" /> : <Mic className="w-5 h-5 mb-1" />}
+            <span className="text-[10px] font-medium">{isRecording ? 'Stop' : 'Record'}</span>
           </button>
+
           <button
             onClick={toggleLiveVoiceMode}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
-              isLiveVoiceMode ? 'bg-purple-500 text-white hover:bg-purple-600' : 'bg-gray-200 text-[#737E9C] hover:bg-gray-300'
+            className={`flex flex-col items-center justify-center h-16 rounded-xl transition-colors ${
+              isLiveVoiceMode
+                ? 'bg-purple-500 hover:bg-purple-600 text-white'
+                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
             }`}
-            aria-label={isLiveVoiceMode ? 'Disable live voice' : 'Enable live voice'}
             disabled={isLoading || isRecording || !browserSupportsSpeechRecognition}
-            title={isLiveVoiceMode ? 'Disable live voice mode' : 'Enable live voice mode'}
+            title={isLiveVoiceMode ? 'Disable live voice' : 'Enable live voice conversation'}
           >
-            <Volume2 className="w-4 h-4" />
+            {isLiveVoiceMode ? <MicOff className="w-5 h-5 mb-1" /> : <Volume2 className="w-5 h-5 mb-1" />}
+            <span className="text-[10px] font-medium">Live Voice</span>
           </button>
         </div>
 
+        {/* Input and Send */}
         <div className="flex gap-2">
           <textarea
             value={input}
@@ -762,34 +718,28 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                 handleSend();
               }
             }}
-            placeholder={isRecording ? 'Recording...' : listening ? 'Listening...' : isLiveVoiceMode ? 'Speak to Penny...' : 'Ask Penny...'}
-            className="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-3 text-sm focus:ring-2 focus:ring-[#0044FF] focus:border-[#0044FF] outline-none"
-            rows={1}
+            placeholder={
+              isRecording ? 'Recording audio...' :
+              listening ? 'Listening...' :
+              isLiveVoiceMode ? 'Speak to Penny...' :
+              'Type a message or use voice/upload...'
+            }
+            className="flex-1 resize-none border-2 border-gray-300 focus:border-blue-500 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+            rows={2}
             disabled={isLoading || isRecording || isLiveVoiceMode}
           />
-          {browserSupportsSpeechRecognition && !isLiveVoiceMode && (
-            <button
-              onClick={toggleVoiceInput}
-              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
-                listening ? 'bg-red-500 text-white' : 'bg-gray-200 text-[#737E9C] hover:bg-gray-300'
-              }`}
-              aria-label={listening ? 'Stop listening' : 'Start voice input'}
-              disabled={isRecording}
-            >
-              {listening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-            </button>
-          )}
           <button
             onClick={() => handleSend()}
             disabled={(!input.trim() && attachments.length === 0) || isLoading || isRecording || isLiveVoiceMode}
-            className="w-12 h-12 bg-[#0044FF] rounded-xl flex items-center justify-center hover:bg-[#0033CC] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl flex items-center justify-center hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl self-end"
             aria-label="Send message"
           >
-            <Send className="w-5 h-5 text-white" />
+            <Send className="w-6 h-6 text-white" />
           </button>
         </div>
-        <p className="text-xs text-[#6B7280] text-center mt-2">
-          Penny can make mistakes. Verify important info.
+
+        <p className="text-xs text-gray-500 text-center mt-2">
+          Penny can search employees, scan documents, transcribe audio & more
         </p>
       </div>
     </div>
