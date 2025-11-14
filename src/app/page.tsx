@@ -21,8 +21,21 @@ import {
 export default function Home() {
   return (
     <main className="min-h-screen bg-white">
+      {/* AI Genesis Hackathon Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 text-center text-sm font-medium">
+        <span>AI Genesis Hackathon - </span>
+        <a
+          href="https://lablab.ai/event/ai-genesis"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-blue-100 transition-colors"
+        >
+          Learn more
+        </a>
+      </div>
+
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+      <header className="fixed top-8 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -61,19 +74,24 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="w-full relative overflow-hidden">
+      <section className="w-full relative overflow-hidden pt-8">
         <div className="relative flex flex-col items-center w-full px-6">
-          {/* Background with Gradient Mesh */}
+          {/* Background with Enhanced Gradient Mesh */}
           <div className="absolute inset-0 -z-10">
+            {/* Base gradient */}
+            <div className="absolute inset-0 h-full w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
             <div className="absolute inset-0 h-full w-full bg-[radial-gradient(125%_125%_at_50%_10%,#fff_40%,#dbeafe_100%)]"></div>
-            {/* Gradient Mesh Overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
-            <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-400 opacity-20 blur-[100px]"></div>
+            {/* Grid pattern overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+            {/* Gradient orbs */}
+            <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-gradient-to-r from-blue-400 to-purple-400 opacity-30 blur-[120px]"></div>
+            <div className="absolute left-1/4 top-40 h-[200px] w-[200px] rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 opacity-20 blur-[100px]"></div>
           </div>
-          {/* Decorative Lines */}
-          <div className="absolute top-0 left-0 md:left-10 h-full w-px bg-gray-200/50 hidden md:block"></div>
-          <div className="absolute top-0 right-0 md:right-10 h-full w-px bg-gray-200/50 hidden md:block"></div>
-          <div className="relative z-10 pt-32 pb-12 max-w-3xl mx-auto h-full w-full flex flex-col gap-10 items-center justify-center text-center">
+          {/* Decorative Vertical Lines with Gradient */}
+          <div className="absolute top-0 left-4 md:left-10 h-full w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent hidden md:block"></div>
+          <div className="absolute top-0 right-4 md:right-10 h-full w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent hidden md:block"></div>
+
+          <div className="relative z-10 pt-24 pb-12 max-w-3xl mx-auto h-full w-full flex flex-col gap-10 items-center justify-center text-center">
             <p className="border border-blue-200 bg-blue-50 rounded-full text-sm h-8 px-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600" />
               <span className="font-semibold text-blue-700">AI-Powered Payroll Revolution</span>
@@ -94,21 +112,24 @@ export default function Home() {
           <div className="flex items-center gap-2.5 flex-wrap justify-center">
             <SignedOut>
               <SignUpButton mode="modal">
-                <button className="bg-blue-600 h-10 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white w-32 px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
+                <button className="bg-blue-600 h-10 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white px-6 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
                   Try for Free
                 </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
-                <button className="bg-blue-600 h-10 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white w-32 px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
+                <button className="bg-blue-600 h-10 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white px-6 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
                   Dashboard
                 </button>
               </Link>
             </SignedIn>
+            <button className="h-10 flex items-center justify-center px-6 text-sm font-normal tracking-wide text-gray-900 rounded-full transition-all ease-out active:scale-95 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm">
+              Watch Demo
+            </button>
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="h-10 flex items-center justify-center w-32 px-5 text-sm font-normal tracking-wide text-gray-900 rounded-full transition-all ease-out active:scale-95 bg-white border border-gray-200 hover:bg-gray-50">
+                <button className="h-10 flex items-center justify-center px-6 text-sm font-normal tracking-wide text-gray-900 rounded-full transition-all ease-out active:scale-95 bg-white border border-gray-200 hover:bg-gray-50">
                   Log in
                 </button>
               </SignInButton>
