@@ -57,7 +57,10 @@ export async function POST(request: NextRequest) {
     });
 
     const opusClient = getOpusClient();
-    await opusClient.submitReview(reviewId, decision, reviewer, notes);
+    // Map 'approved'/'rejected' to Opus decision format
+    const opusDecision = decision === 'approved' ? 'approve' : 'reject';
+    const reviewNotes = notes || `Review by ${reviewer}`;
+    await opusClient.submitReview(reviewId, opusDecision, reviewNotes);
 
     console.log('[Workflow Review Submit API] Review submitted successfully');
 
