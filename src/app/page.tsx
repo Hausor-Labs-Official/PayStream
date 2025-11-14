@@ -61,15 +61,19 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="w-full relative">
+      <section className="w-full relative overflow-hidden">
         <div className="relative flex flex-col items-center w-full px-6">
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 -z-10 h-[600px] md:h-[800px] w-full bg-[radial-gradient(125%_125%_at_50%_10%,#fff_40%,#dbeafe_100%)] rounded-b-xl"></div>
+          {/* Background with Gradient Mesh */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute inset-0 h-full w-full bg-[radial-gradient(125%_125%_at_50%_10%,#fff_40%,#dbeafe_100%)]"></div>
+            {/* Gradient Mesh Overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]"></div>
+            <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-blue-400 opacity-20 blur-[100px]"></div>
           </div>
           {/* Decorative Lines */}
           <div className="absolute top-0 left-0 md:left-10 h-full w-px bg-gray-200/50 hidden md:block"></div>
           <div className="absolute top-0 right-0 md:right-10 h-full w-px bg-gray-200/50 hidden md:block"></div>
-          <div className="relative z-10 pt-32 pb-20 max-w-3xl mx-auto h-full w-full flex flex-col gap-10 items-center justify-center text-center">
+          <div className="relative z-10 pt-32 pb-12 max-w-3xl mx-auto h-full w-full flex flex-col gap-10 items-center justify-center text-center">
             <p className="border border-blue-200 bg-blue-50 rounded-full text-sm h-8 px-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600" />
               <span className="font-semibold text-blue-700">AI-Powered Payroll Revolution</span>
@@ -125,6 +129,21 @@ export default function Home() {
               <span>24/7 AI support</span>
             </div>
           </div>
+          </div>
+
+          {/* Dashboard Preview Image */}
+          <div className="relative z-10 mt-16 mb-20 w-full max-w-6xl mx-auto px-4">
+            <div className="relative rounded-xl border border-gray-200 bg-white shadow-2xl overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-transparent to-purple-50 opacity-60"></div>
+              <Image
+                src="/dashboard-preview.png"
+                alt="Paystream AI Dashboard Preview"
+                width={1920}
+                height={1080}
+                className="relative w-full h-auto rounded-lg"
+                priority
+              />
+            </div>
           </div>
         </div>
       </section>
