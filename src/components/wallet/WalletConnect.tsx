@@ -107,13 +107,24 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
         throw new Error('Please install MetaMask or another Web3 wallet');
       }
 
-      // Request account access
-      const accounts = await window.ethereum.request({
+      // Check if ethereum object is ready
+      if (!window.ethereum.isMetaMask && !window.ethereum.isConnected) {
+        throw new Error('MetaMask is not ready. Please refresh the page and try again.');
+      }
+
+      // Request account access with timeout
+      const accountsPromise = window.ethereum.request({
         method: 'eth_requestAccounts',
       });
 
-      if (accounts.length === 0) {
-        throw new Error('No accounts found');
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Connection timeout. Please try again.')), 30000);
+      });
+
+      const accounts = await Promise.race([accountsPromise, timeoutPromise]) as string[];
+
+      if (!accounts || accounts.length === 0) {
+        throw new Error('No accounts found. Please unlock MetaMask and try again.');
       }
 
       const account = accounts[0];
@@ -148,10 +159,9 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
               ],
             });
           } catch (addError) {
-            // Silently handle chain add errors as they're not critical
+            console.log('Could not add Arc Testnet chain:', addError);
           }
         }
-        // Silently handle switch errors as they're not critical for wallet connection
       }
 
       setShowModal(true);
@@ -159,8 +169,19 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
       if (onConnect) {
         onConnect(account);
       }
-    } catch (err) {
-      const errorMessage = (err as Error).message;
+    } catch (err: any) {
+      let errorMessage = 'Failed to connect to MetaMask';
+
+      if (err?.message) {
+        errorMessage = err.message;
+      } else if (err?.code === 4001) {
+        errorMessage = 'Connection request was rejected. Please try again.';
+      } else if (err?.code === -32002) {
+        errorMessage = 'A connection request is already pending. Please check MetaMask.';
+      } else if (err?.code === -32603) {
+        errorMessage = 'Internal error. Please refresh the page and try again.';
+      }
+
       setError(errorMessage);
       console.error('Error connecting wallet:', err);
     } finally {
