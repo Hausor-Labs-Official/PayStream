@@ -107,11 +107,6 @@ export default function WalletConnect({ onConnect, className = '' }: WalletConne
         throw new Error('Please install MetaMask or another Web3 wallet');
       }
 
-      // Check if ethereum object is ready
-      if (!window.ethereum.isMetaMask && !window.ethereum.isConnected) {
-        throw new Error('MetaMask is not ready. Please refresh the page and try again.');
-      }
-
       // Request account access with timeout
       const accountsPromise = window.ethereum.request({
         method: 'eth_requestAccounts',
