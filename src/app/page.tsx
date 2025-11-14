@@ -22,7 +22,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white">
       {/* AI Genesis Hackathon Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 text-center text-sm font-medium">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white py-2 text-center text-sm font-medium">
         <span>AI Genesis Hackathon - </span>
         <a
           href="https://lablab.ai/event/ai-genesis"
@@ -35,7 +35,7 @@ export default function Home() {
       </div>
 
       {/* Header */}
-      <header className="fixed top-8 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+      <header className="fixed top-8 left-0 right-0 z-40 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <Image
@@ -184,71 +184,61 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 border border-gray-200 rounded-xl overflow-hidden">
             {[
               {
-                icon: <Bot className="w-10 h-10 text-white" />,
+                icon: <Bot className="w-6 h-6 text-blue-600" />,
                 title: 'Penny AI Assistant',
-                description: 'Your intelligent payroll companion powered by Google Gemini 2.0 Flash, helping you with queries, insights, and automation.',
-                gradient: 'from-blue-500 to-blue-600'
+                description: 'Your intelligent payroll companion powered by Google Gemini 2.0 Flash, helping you with queries, insights, and automation.'
               },
               {
-                icon: <Coins className="w-10 h-10 text-white" />,
+                icon: <Coins className="w-6 h-6 text-blue-600" />,
                 title: 'Instant USDC Payments',
-                description: 'Lightning-fast payroll disbursement using USDC stablecoin on Arc blockchain with Circle Developer-Controlled Wallets.',
-                gradient: 'from-green-500 to-green-600'
+                description: 'Lightning-fast payroll disbursement using USDC stablecoin on Arc blockchain with Circle Developer-Controlled Wallets.'
               },
               {
-                icon: <Zap className="w-10 h-10 text-white" />,
+                icon: <Zap className="w-6 h-6 text-blue-600" />,
                 title: 'Batch Processing',
-                description: 'Process hundreds of payments in seconds with our optimized batch transaction system on Arc Testnet.',
-                gradient: 'from-purple-500 to-purple-600'
+                description: 'Process hundreds of payments in seconds with our optimized batch transaction system on Arc Testnet.'
               },
               {
-                icon: <Brain className="w-10 h-10 text-white" />,
+                icon: <Brain className="w-6 h-6 text-blue-600" />,
                 title: 'Semantic Search',
-                description: 'Find employees using natural language with AI-powered semantic search through Qdrant vector database.',
-                gradient: 'from-indigo-500 to-indigo-600'
+                description: 'Find employees using natural language with AI-powered semantic search through Qdrant vector database.'
               },
               {
-                icon: <Shield className="w-10 h-10 text-white" />,
+                icon: <Shield className="w-6 h-6 text-blue-600" />,
                 title: 'Enterprise Security',
-                description: 'Bank-level security with blockchain transparency and end-to-end encryption for all transactions.',
-                gradient: 'from-red-500 to-red-600'
+                description: 'Bank-level security with blockchain transparency and end-to-end encryption for all transactions.'
               },
               {
-                icon: <TrendingUp className="w-10 h-10 text-white" />,
+                icon: <TrendingUp className="w-6 h-6 text-blue-600" />,
                 title: 'Real-time Analytics',
-                description: 'Track payroll metrics, employee data, and transaction history with beautiful charts and insights.',
-                gradient: 'from-orange-500 to-orange-600'
+                description: 'Track payroll metrics, employee data, and transaction history with beautiful charts and insights.'
               },
               {
-                icon: <Users className="w-10 h-10 text-white" />,
+                icon: <Users className="w-6 h-6 text-blue-600" />,
                 title: 'Smart Employee Management',
-                description: 'Manage employee profiles, wallets, and payment history with OCR document scanning and AI verification.',
-                gradient: 'from-cyan-500 to-cyan-600'
+                description: 'Manage employee profiles, wallets, and payment history with OCR document scanning and AI verification.'
               },
               {
-                icon: <Globe className="w-10 h-10 text-white" />,
+                icon: <Globe className="w-6 h-6 text-blue-600" />,
                 title: 'Multi-Modal AI',
-                description: 'Upload documents, scan IDs, transcribe audio - Penny handles images, PDFs, audio files with multimodal AI.',
-                gradient: 'from-pink-500 to-pink-600'
+                description: 'Upload documents, scan IDs, transcribe audio - Penny handles images, PDFs, audio files with multimodal AI.'
               },
               {
-                icon: <Lock className="w-10 h-10 text-white" />,
+                icon: <Lock className="w-6 h-6 text-blue-600" />,
                 title: 'Workflow Approvals',
-                description: 'Powered by Opus API for sophisticated approval workflows with AI-driven decision support.',
-                gradient: 'from-teal-500 to-teal-600'
+                description: 'Powered by Opus API for sophisticated approval workflows with AI-driven decision support.'
               },
               {
-                icon: <Wallet className="w-10 h-10 text-white" />,
+                icon: <Wallet className="w-6 h-6 text-blue-600" />,
                 title: 'Developer-Controlled Wallets',
-                description: 'Secure wallet infrastructure with Circle API integration for seamless USDC management.',
-                gradient: 'from-yellow-500 to-yellow-600'
+                description: 'Secure wallet infrastructure with Circle API integration for seamless USDC management.'
               },
             ].map((feature, idx) => (
               <div
                 key={feature.title}
-                className="p-8 bg-white hover:bg-gray-50 transition-all group min-h-[280px] flex flex-col"
+                className="p-8 bg-white min-h-[280px] flex flex-col"
               >
-                <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                <div className="mb-6">
                   {feature.icon}
                 </div>
                 <h4 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h4>
