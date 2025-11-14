@@ -24,18 +24,18 @@ export default function Home() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-2">
             <Image
               src="/paystream-logo.svg"
               alt="Paystream AI"
-              width={40}
-              height={40}
+              width={32}
+              height={32}
               className="flex-shrink-0"
             />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+            <h1 className="text-xl font-semibold text-gray-900">
               Paystream AI
             </h1>
-          </div>
+          </Link>
           <div className="flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal">
@@ -66,6 +66,9 @@ export default function Home() {
           <div className="absolute inset-0">
             <div className="absolute inset-0 -z-10 h-[600px] md:h-[800px] w-full bg-[radial-gradient(125%_125%_at_50%_10%,#fff_40%,#dbeafe_100%)] rounded-b-xl"></div>
           </div>
+          {/* Decorative Lines */}
+          <div className="absolute top-0 left-0 md:left-10 h-full w-px bg-gray-200/50 hidden md:block"></div>
+          <div className="absolute top-0 right-0 md:right-10 h-full w-px bg-gray-200/50 hidden md:block"></div>
           <div className="relative z-10 pt-32 pb-20 max-w-3xl mx-auto h-full w-full flex flex-col gap-10 items-center justify-center text-center">
             <p className="border border-blue-200 bg-blue-50 rounded-full text-sm h-8 px-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-blue-600" />
@@ -127,7 +130,7 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-6 bg-white">
+      <section className="py-20 px-6 bg-white relative">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1 text-gray-900 mb-4">
@@ -138,72 +141,78 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 border border-gray-200 rounded-xl overflow-hidden">
             {[
               {
-                icon: <Bot className="w-8 h-8 text-blue-600" />,
+                icon: <Bot className="w-10 h-10 text-white" />,
                 title: 'Penny AI Assistant',
                 description: 'Your intelligent payroll companion powered by Google Gemini 2.0 Flash, helping you with queries, insights, and automation.',
                 gradient: 'from-blue-500 to-blue-600'
               },
               {
-                icon: <Coins className="w-8 h-8 text-blue-600" />,
+                icon: <Coins className="w-10 h-10 text-white" />,
                 title: 'Instant USDC Payments',
                 description: 'Lightning-fast payroll disbursement using USDC stablecoin on Arc blockchain with Circle Developer-Controlled Wallets.',
                 gradient: 'from-green-500 to-green-600'
               },
               {
-                icon: <Zap className="w-8 h-8 text-blue-600" />,
+                icon: <Zap className="w-10 h-10 text-white" />,
                 title: 'Batch Processing',
                 description: 'Process hundreds of payments in seconds with our optimized batch transaction system on Arc Testnet.',
                 gradient: 'from-purple-500 to-purple-600'
               },
               {
-                icon: <Brain className="w-8 h-8 text-blue-600" />,
+                icon: <Brain className="w-10 h-10 text-white" />,
                 title: 'Semantic Search',
                 description: 'Find employees using natural language with AI-powered semantic search through Qdrant vector database.',
                 gradient: 'from-indigo-500 to-indigo-600'
               },
               {
-                icon: <Shield className="w-8 h-8 text-blue-600" />,
+                icon: <Shield className="w-10 h-10 text-white" />,
                 title: 'Enterprise Security',
-                description: 'Bank-level security with Supabase, Clerk authentication, and blockchain transparency for all transactions.',
+                description: 'Bank-level security with blockchain transparency and end-to-end encryption for all transactions.',
                 gradient: 'from-red-500 to-red-600'
               },
               {
-                icon: <TrendingUp className="w-8 h-8 text-blue-600" />,
+                icon: <TrendingUp className="w-10 h-10 text-white" />,
                 title: 'Real-time Analytics',
                 description: 'Track payroll metrics, employee data, and transaction history with beautiful charts and insights.',
                 gradient: 'from-orange-500 to-orange-600'
               },
               {
-                icon: <Users className="w-8 h-8 text-blue-600" />,
+                icon: <Users className="w-10 h-10 text-white" />,
                 title: 'Smart Employee Management',
                 description: 'Manage employee profiles, wallets, and payment history with OCR document scanning and AI verification.',
                 gradient: 'from-cyan-500 to-cyan-600'
               },
               {
-                icon: <Globe className="w-8 h-8 text-blue-600" />,
+                icon: <Globe className="w-10 h-10 text-white" />,
                 title: 'Multi-Modal AI',
                 description: 'Upload documents, scan IDs, transcribe audio - Penny handles images, PDFs, audio files with multimodal AI.',
                 gradient: 'from-pink-500 to-pink-600'
               },
               {
-                icon: <Lock className="w-8 h-8 text-blue-600" />,
+                icon: <Lock className="w-10 h-10 text-white" />,
                 title: 'Workflow Approvals',
                 description: 'Powered by Opus API for sophisticated approval workflows with AI-driven decision support.',
                 gradient: 'from-teal-500 to-teal-600'
               },
-            ].map((feature) => (
+              {
+                icon: <Wallet className="w-10 h-10 text-white" />,
+                title: 'Developer-Controlled Wallets',
+                description: 'Secure wallet infrastructure with Circle API integration for seamless USDC management.',
+                gradient: 'from-yellow-500 to-yellow-600'
+              },
+            ].map((feature, idx) => (
               <div
                 key={feature.title}
-                className="p-8 bg-gradient-to-br from-gray-50 to-white border-2 border-gray-200 rounded-2xl hover:border-blue-400 hover:bg-blue-50/30 transition-all group"
+                className="p-8 bg-white hover:bg-gray-50 transition-all group min-h-[280px] flex flex-col"
               >
-                <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                <div className={`w-16 h-16 bg-gradient-to-br ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
                   {feature.icon}
                 </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h4>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+                <h4 className="text-xl font-semibold text-gray-900 mb-3">{feature.title}</h4>
+                <p className="text-gray-600 leading-relaxed text-sm">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -224,19 +233,94 @@ export default function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { name: 'Google Gemini 2.0', desc: 'AI Engine' },
-              { name: 'Arc Blockchain', desc: 'Payment Network' },
-              { name: 'Circle USDC', desc: 'Stablecoin' },
-              { name: 'Qdrant', desc: 'Vector Search' },
-              { name: 'Supabase', desc: 'Database' },
-              { name: 'Clerk', desc: 'Authentication' },
-              { name: 'Opus API', desc: 'Workflows' },
-              { name: 'ElevenLabs', desc: 'Voice AI' },
+              {
+                name: 'Google Gemini 2.0',
+                desc: 'AI Engine',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#4285F4"/>
+                    <path d="M12 6L15 12L12 18L9 12Z" fill="white"/>
+                  </svg>
+                )
+              },
+              {
+                name: 'Arc Blockchain',
+                desc: 'Payment Network',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#7C3AED"/>
+                    <path d="M8 12L12 8L16 12L12 16Z" fill="white"/>
+                  </svg>
+                )
+              },
+              {
+                name: 'Circle USDC',
+                desc: 'Stablecoin',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#2775CA"/>
+                    <text x="12" y="16" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">$</text>
+                  </svg>
+                )
+              },
+              {
+                name: 'Qdrant',
+                desc: 'Vector Search',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#DC2626"/>
+                    <circle cx="12" cy="12" r="4" fill="white"/>
+                  </svg>
+                )
+              },
+              {
+                name: 'AI/ML API',
+                desc: 'Machine Learning',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#10B981"/>
+                    <path d="M8 12H16M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                )
+              },
+              {
+                name: 'Opus API',
+                desc: 'Workflows',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#14B8A6"/>
+                    <rect x="8" y="8" width="8" height="8" rx="1" fill="white"/>
+                  </svg>
+                )
+              },
+              {
+                name: 'ElevenLabs',
+                desc: 'Voice AI',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#F59E0B"/>
+                    <path d="M9 12L12 9V15L15 12" fill="white"/>
+                  </svg>
+                )
+              },
+              {
+                name: 'Next.js',
+                desc: 'Framework',
+                logo: (
+                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#000000"/>
+                    <path d="M10 8L14 12L10 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )
+              },
             ].map((tech) => (
               <div
                 key={tech.name}
-                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-center hover:border-blue-400 hover:bg-blue-50 transition-all"
+                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-center hover:border-blue-400 hover:bg-blue-50 transition-all group"
               >
+                <div className="group-hover:scale-110 transition-transform">
+                  {tech.logo}
+                </div>
                 <p className="font-bold text-gray-900 mb-1">{tech.name}</p>
                 <p className="text-sm text-gray-600">{tech.desc}</p>
               </div>

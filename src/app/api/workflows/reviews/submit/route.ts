@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const opusClient = getOpusClient();
     // Map 'approved'/'rejected' to Opus decision format
-    const opusDecision = decision === 'approved' ? 'approve' : 'reject';
+    const opusDecision = decision === 'approved' ? ('approved' as const) : ('rejected' as const);
     const reviewNotes = notes || `Review by ${reviewer}`;
     await opusClient.submitReview(reviewId, opusDecision, reviewNotes);
 
