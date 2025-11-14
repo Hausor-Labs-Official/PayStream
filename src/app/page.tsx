@@ -39,19 +39,21 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal">
-                <Button variant="ghost">Sign In</Button>
+                <button className="h-9 flex items-center justify-center px-4 text-sm font-normal tracking-wide text-gray-700 rounded-full transition-all ease-out active:scale-95 hover:bg-gray-100">
+                  Sign In
+                </button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
+                <button className="bg-blue-600 h-9 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
                   Get Started
-                </Button>
+                </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
-                <Button className="bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
-                  Go to Dashboard <ArrowRight className="ml-2 w-4 h-4" />
-                </Button>
+                <button className="bg-blue-600 h-9 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
+                  Dashboard <ArrowRight className="ml-2 w-4 h-4" />
+                </button>
               </Link>
             </SignedIn>
           </div>
@@ -59,43 +61,51 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6 bg-gradient-to-b from-blue-50 to-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full mb-8">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-semibold text-blue-700">AI-Powered Payroll Revolution</span>
+      <section className="w-full relative">
+        <div className="relative flex flex-col items-center w-full px-6">
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 -z-10 h-[600px] md:h-[800px] w-full bg-[radial-gradient(125%_125%_at_50%_10%,#fff_40%,#dbeafe_100%)] rounded-b-xl"></div>
           </div>
+          <div className="relative z-10 pt-32 pb-20 max-w-3xl mx-auto h-full w-full flex flex-col gap-10 items-center justify-center text-center">
+            <p className="border border-blue-200 bg-blue-50 rounded-full text-sm h-8 px-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-600" />
+              <span className="font-semibold text-blue-700">AI-Powered Payroll Revolution</span>
+            </p>
+            <div className="flex flex-col items-center justify-center gap-5">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium tracking-tighter text-balance text-center text-gray-900">
+                The Future of{' '}
+                <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
+                  Blockchain Payroll
+                </span>
+              </h1>
+              <p className="text-base md:text-lg text-center text-gray-600 font-medium text-balance leading-relaxed tracking-tight max-w-3xl">
+                Streamline your payroll with AI-powered automation, instant USDC payments on Arc blockchain,
+                and intelligent insights from Penny AI - your personal payroll assistant.
+              </p>
+            </div>
 
-          <h2 className="text-6xl md:text-7xl font-bold text-gray-900 mb-6 leading-tight">
-            The Future of <br />
-            <span className="bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
-              Blockchain Payroll
-            </span>
-          </h2>
-
-          <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Streamline your payroll with AI-powered automation, instant USDC payments on Arc blockchain,
-            and intelligent insights from Penny AI - your personal payroll assistant.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex items-center gap-2.5 flex-wrap justify-center">
             <SignedOut>
               <SignUpButton mode="modal">
-                <Button size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
-                  Start Free Trial <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                <button className="bg-blue-600 h-10 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white w-32 px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
+                  Try for Free
+                </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
-                <Button size="lg" className="text-lg px-8 py-6 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600">
-                  Open Dashboard <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                <button className="bg-blue-600 h-10 flex items-center justify-center text-sm font-normal tracking-wide rounded-full text-white w-32 px-4 shadow-[inset_0_1px_2px_rgba(255,255,255,0.25),0_3px_3px_-1.5px_rgba(16,24,40,0.06),0_1px_1px_rgba(16,24,40,0.08)] border border-white/[0.12] hover:bg-blue-700 transition-all ease-out active:scale-95">
+                  Dashboard
+                </button>
               </Link>
             </SignedIn>
-            <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2">
-              Watch Demo
-            </Button>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="h-10 flex items-center justify-center w-32 px-5 text-sm font-normal tracking-wide text-gray-900 rounded-full transition-all ease-out active:scale-95 bg-white border border-gray-200 hover:bg-gray-50">
+                  Log in
+                </button>
+              </SignInButton>
+            </SignedOut>
           </div>
 
           <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-600">
@@ -119,10 +129,10 @@ export default function Home() {
       <section className="py-20 px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1 text-gray-900 mb-4">
               Everything You Need for Modern Payroll
-            </h3>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            </h2>
+            <p className="text-gray-600 text-center text-balance font-medium max-w-2xl mx-auto">
               Powered by cutting-edge AI and blockchain technology to make payroll effortless
             </p>
           </div>
@@ -203,10 +213,10 @@ export default function Home() {
       <section className="py-20 px-6 bg-gradient-to-b from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1 text-gray-900 mb-4">
               Built with Best-in-Class Technology
-            </h3>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            </h2>
+            <p className="text-gray-600 text-center text-balance font-medium max-w-2xl mx-auto">
               We leverage the most advanced AI and blockchain infrastructure
             </p>
           </div>
@@ -237,25 +247,25 @@ export default function Home() {
       {/* CTA Section */}
       <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-500">
         <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          <h1 className="text-4xl md:text-5xl xl:text-6xl font-medium tracking-tighter text-white mb-6">
             Ready to Transform Your Payroll?
-          </h3>
-          <p className="text-xl text-blue-100 mb-10">
+          </h1>
+          <p className="text-lg md:text-xl text-blue-100 mb-10 font-medium">
             Join the future of blockchain payroll with AI-powered automation
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <SignedOut>
               <SignUpButton mode="modal">
-                <Button size="lg" className="text-lg px-8 py-6 bg-white text-blue-600 hover:bg-gray-100">
+                <button className="bg-white text-blue-600 font-semibold text-sm h-10 w-fit px-6 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition-all ease-out active:scale-95">
                   Start Free Trial <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                </button>
               </SignUpButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
-                <Button size="lg" className="text-lg px-8 py-6 bg-white text-blue-600 hover:bg-gray-100">
+                <button className="bg-white text-blue-600 font-semibold text-sm h-10 w-fit px-6 rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition-all ease-out active:scale-95">
                   Open Dashboard <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
+                </button>
               </Link>
             </SignedIn>
           </div>
