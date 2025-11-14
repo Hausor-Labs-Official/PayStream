@@ -266,90 +266,49 @@ export default function Home() {
               {
                 name: 'Google Gemini 2.0',
                 desc: 'AI Engine',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#4285F4"/>
-                    <path d="M12 6L15 12L12 18L9 12Z" fill="white"/>
-                  </svg>
-                )
+                logoUrl: 'https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/google-gemini-icon.png'
               },
               {
                 name: 'Arc Blockchain',
                 desc: 'Payment Network',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#7C3AED"/>
-                    <path d="M8 12L12 8L16 12L12 16Z" fill="white"/>
-                  </svg>
-                )
+                logoUrl: 'https://www.circle.com/hs-fs/hubfs/Circle_Logo.png'
               },
               {
                 name: 'Circle USDC',
                 desc: 'Stablecoin',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#2775CA"/>
-                    <text x="12" y="16" textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">$</text>
-                  </svg>
-                )
+                logoUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'
               },
               {
                 name: 'Qdrant',
                 desc: 'Vector Search',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#DC2626"/>
-                    <circle cx="12" cy="12" r="4" fill="white"/>
-                  </svg>
-                )
+                logoUrl: 'https://qdrant.tech/img/logo_with_text.png'
               },
               {
                 name: 'AI/ML API',
                 desc: 'Machine Learning',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#10B981"/>
-                    <path d="M8 12H16M12 8V16" stroke="white" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                )
+                logoUrl: 'https://aimlapi.com/favicon.ico'
               },
               {
                 name: 'Opus API',
                 desc: 'Workflows',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#14B8A6"/>
-                    <rect x="8" y="8" width="8" height="8" rx="1" fill="white"/>
-                  </svg>
-                )
+                logoUrl: 'https://www.opus.com/favicon.ico'
               },
               {
                 name: 'ElevenLabs',
                 desc: 'Voice AI',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#F59E0B"/>
-                    <path d="M9 12L12 9V15L15 12" fill="white"/>
-                  </svg>
-                )
-              },
-              {
-                name: 'Next.js',
-                desc: 'Framework',
-                logo: (
-                  <svg className="w-12 h-12 mx-auto mb-3" viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#000000"/>
-                    <path d="M10 8L14 12L10 16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )
+                logoUrl: 'https://elevenlabs.io/favicon.ico'
               },
             ].map((tech) => (
               <div
                 key={tech.name}
-                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-center hover:border-blue-400 hover:bg-blue-50 transition-all group"
+                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-center transition-all"
               >
-                <div className="group-hover:scale-110 transition-transform">
-                  {tech.logo}
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center grayscale contrast-125 opacity-70">
+                  <img
+                    src={tech.logoUrl}
+                    alt={`${tech.name} logo`}
+                    className="max-w-full max-h-full object-contain"
+                  />
                 </div>
                 <p className="font-bold text-gray-900 mb-1">{tech.name}</p>
                 <p className="text-sm text-gray-600">{tech.desc}</p>
