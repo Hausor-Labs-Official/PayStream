@@ -1,5 +1,6 @@
 import { SignInButton, SignUpButton, SignedIn, SignedOut } from '@clerk/nextjs';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import {
   ArrowRight,
@@ -24,9 +25,13 @@ export default function Home() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
-              <Wallet className="w-6 h-6 text-white" />
-            </div>
+            <Image
+              src="/paystream-logo.svg"
+              alt="Paystream AI"
+              width={40}
+              height={40}
+              className="flex-shrink-0"
+            />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-500 bg-clip-text text-transparent">
               Paystream AI
             </h1>
@@ -261,9 +266,13 @@ export default function Home() {
       <footer className="py-12 px-6 bg-gray-900 text-gray-400">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-500 rounded-lg flex items-center justify-center">
-              <Wallet className="w-5 h-5 text-white" />
-            </div>
+            <Image
+              src="/paystream-logo.svg"
+              alt="Paystream AI"
+              width={32}
+              height={32}
+              className="flex-shrink-0"
+            />
             <h1 className="text-xl font-bold text-white">Paystream AI</h1>
           </div>
           <p className="text-sm mb-4">
