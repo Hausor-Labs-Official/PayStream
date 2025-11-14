@@ -15,12 +15,17 @@ import {
   Lock,
   Globe,
   CheckCircle2,
-  Wallet
+  Wallet,
+  Clock,
+  DollarSign,
+  AlertTriangle,
+  BarChart3,
+  Globe2
 } from 'lucide-react';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-transparent">
       {/* AI Genesis Hackathon Banner */}
       <div className="fixed top-0 left-0 right-0 z-50 bg-blue-600 text-white py-2 text-center text-sm font-medium">
         <span>AI Genesis Hackathon - </span>
@@ -74,18 +79,13 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="w-full relative overflow-hidden pt-8">
+      <section className="w-full relative overflow-hidden pt-8 bg-transparent">
         <div className="relative flex flex-col items-center w-full px-6">
-          {/* Background with Enhanced Gradient Mesh */}
-          <div className="absolute inset-0 -z-10">
-            {/* Base gradient */}
-            <div className="absolute inset-0 h-full w-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.3),rgba(255,255,255,0))]"></div>
-            <div className="absolute inset-0 h-full w-full bg-[radial-gradient(125%_125%_at_50%_10%,#fff_40%,#dbeafe_100%)]"></div>
-            {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-            {/* Gradient orbs */}
-            <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-gradient-to-r from-blue-400 to-purple-400 opacity-30 blur-[120px]"></div>
-            <div className="absolute left-1/4 top-40 h-[200px] w-[200px] rounded-full bg-gradient-to-r from-cyan-300 to-blue-400 opacity-20 blur-[100px]"></div>
+          {/* Background */}
+          <div className="absolute inset-0">
+            <div className="absolute inset-0 -z-10 h-[600px] md:h-[800px] w-full rounded-b-xl" style={{
+              background: 'radial-gradient(125% 125% at 50% 10%, #ffffff 40%, #93c5fd 100%)'
+            }}></div>
           </div>
           {/* Decorative Vertical Lines with Gradient */}
           <div className="absolute top-0 left-4 md:left-10 h-full w-px bg-gradient-to-b from-transparent via-gray-300 to-transparent hidden md:block"></div>
@@ -169,8 +169,80 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Problem Section */}
+      <section className="py-20 px-6 bg-white relative">
+        {/* Connecting Lines from Hero */}
+        <div className="absolute top-0 left-4 md:left-10 h-full w-px bg-gradient-to-b from-gray-300 via-gray-200 to-transparent hidden md:block"></div>
+        <div className="absolute top-0 right-4 md:right-10 h-full w-px bg-gradient-to-b from-gray-300 via-gray-200 to-transparent hidden md:block"></div>
+
+        {/* Top Separation Line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1 text-gray-900 mb-4">
+              The Payroll Problem
+            </h2>
+            <p className="text-gray-600 text-center text-balance font-medium max-w-2xl mx-auto">
+              Traditional payroll systems are outdated, slow, and expensive
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                title: 'Manual Processing',
+                description: 'Hours spent on repetitive data entry, calculations, and paperwork that could be automated.',
+                icon: <Clock className="w-8 h-8 text-blue-600" />
+              },
+              {
+                title: 'High Costs',
+                description: 'Traditional payroll services charge excessive fees and require long-term commitments.',
+                icon: <DollarSign className="w-8 h-8 text-blue-600" />
+              },
+              {
+                title: 'Slow Payments',
+                description: 'Bank transfers take days to process, leaving employees waiting for their hard-earned money.',
+                icon: <Clock className="w-8 h-8 text-blue-600" />
+              },
+              {
+                title: 'Compliance Risks',
+                description: 'Complex regulations and manual processes increase the risk of costly errors and penalties.',
+                icon: <AlertTriangle className="w-8 h-8 text-blue-600" />
+              },
+              {
+                title: 'Limited Insights',
+                description: 'Basic reporting and analytics make it hard to understand payroll trends and optimize costs.',
+                icon: <BarChart3 className="w-8 h-8 text-blue-600" />
+              },
+              {
+                title: 'No Global Support',
+                description: 'International payments are complicated, expensive, and subject to exchange rate volatility.',
+                icon: <Globe2 className="w-8 h-8 text-blue-600" />
+              },
+            ].map((problem) => (
+              <div
+                key={problem.title}
+                className="p-6 border border-gray-200 rounded-xl hover:border-blue-300 hover:bg-blue-50/50 transition-all"
+              >
+                <div className="mb-4">{problem.icon}</div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-3">{problem.title}</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">{problem.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-20 px-6 bg-white relative">
+        {/* Connecting Lines continuing from Problem section */}
+        <div className="absolute top-0 left-4 md:left-10 h-full w-px bg-gradient-to-b from-gray-200 via-gray-200 to-transparent hidden md:block"></div>
+        <div className="absolute top-0 right-4 md:right-10 h-full w-px bg-gradient-to-b from-gray-200 via-gray-200 to-transparent hidden md:block"></div>
+
+        {/* Top Separation Line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1 text-gray-900 mb-4">
@@ -184,52 +256,52 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 border border-gray-200 rounded-xl overflow-hidden">
             {[
               {
-                icon: <Bot className="w-6 h-6 text-blue-600" />,
+                icon: <Bot className="w-10 h-10 text-blue-600" />,
                 title: 'Penny AI Assistant',
                 description: 'Your intelligent payroll companion powered by Google Gemini 2.0 Flash, helping you with queries, insights, and automation.'
               },
               {
-                icon: <Coins className="w-6 h-6 text-blue-600" />,
+                icon: <Coins className="w-10 h-10 text-blue-600" />,
                 title: 'Instant USDC Payments',
                 description: 'Lightning-fast payroll disbursement using USDC stablecoin on Arc blockchain with Circle Developer-Controlled Wallets.'
               },
               {
-                icon: <Zap className="w-6 h-6 text-blue-600" />,
+                icon: <Zap className="w-10 h-10 text-blue-600" />,
                 title: 'Batch Processing',
                 description: 'Process hundreds of payments in seconds with our optimized batch transaction system on Arc Testnet.'
               },
               {
-                icon: <Brain className="w-6 h-6 text-blue-600" />,
+                icon: <Brain className="w-10 h-10 text-blue-600" />,
                 title: 'Semantic Search',
                 description: 'Find employees using natural language with AI-powered semantic search through Qdrant vector database.'
               },
               {
-                icon: <Shield className="w-6 h-6 text-blue-600" />,
+                icon: <Shield className="w-10 h-10 text-blue-600" />,
                 title: 'Enterprise Security',
                 description: 'Bank-level security with blockchain transparency and end-to-end encryption for all transactions.'
               },
               {
-                icon: <TrendingUp className="w-6 h-6 text-blue-600" />,
+                icon: <TrendingUp className="w-10 h-10 text-blue-600" />,
                 title: 'Real-time Analytics',
                 description: 'Track payroll metrics, employee data, and transaction history with beautiful charts and insights.'
               },
               {
-                icon: <Users className="w-6 h-6 text-blue-600" />,
+                icon: <Users className="w-10 h-10 text-blue-600" />,
                 title: 'Smart Employee Management',
                 description: 'Manage employee profiles, wallets, and payment history with OCR document scanning and AI verification.'
               },
               {
-                icon: <Globe className="w-6 h-6 text-blue-600" />,
+                icon: <Globe className="w-10 h-10 text-blue-600" />,
                 title: 'Multi-Modal AI',
                 description: 'Upload documents, scan IDs, transcribe audio - Penny handles images, PDFs, audio files with multimodal AI.'
               },
               {
-                icon: <Lock className="w-6 h-6 text-blue-600" />,
+                icon: <Lock className="w-10 h-10 text-blue-600" />,
                 title: 'Workflow Approvals',
                 description: 'Powered by Opus API for sophisticated approval workflows with AI-driven decision support.'
               },
               {
-                icon: <Wallet className="w-6 h-6 text-blue-600" />,
+                icon: <Wallet className="w-10 h-10 text-blue-600" />,
                 title: 'Developer-Controlled Wallets',
                 description: 'Secure wallet infrastructure with Circle API integration for seamless USDC management.'
               },
@@ -250,7 +322,14 @@ export default function Home() {
       </section>
 
       {/* Tech Stack Section */}
-      <section className="py-20 px-6 bg-gradient-to-b from-gray-50 to-white">
+      <section className="py-20 px-6 bg-gradient-to-b from-gray-50 to-white relative">
+        {/* Connecting Lines continuing from Features section */}
+        <div className="absolute top-0 left-4 md:left-10 h-full w-px bg-gradient-to-b from-gray-200 via-gray-200 to-transparent hidden md:block"></div>
+        <div className="absolute top-0 right-4 md:right-10 h-full w-px bg-gradient-to-b from-gray-200 via-gray-200 to-transparent hidden md:block"></div>
+
+        {/* Top Separation Line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-medium tracking-tighter text-center text-balance pb-1 text-gray-900 mb-4">
@@ -261,7 +340,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div className="flex flex-wrap justify-center gap-6 max-w-4xl mx-auto">
             {[
               {
                 name: 'Google Gemini 2.0',
@@ -301,17 +380,17 @@ export default function Home() {
             ].map((tech) => (
               <div
                 key={tech.name}
-                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-center transition-all"
+                className="p-6 bg-white border-2 border-gray-200 rounded-xl text-center transition-all w-40"
               >
-                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center grayscale contrast-125 opacity-70">
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <img
                     src={tech.logoUrl}
                     alt={`${tech.name} logo`}
                     className="max-w-full max-h-full object-contain"
                   />
                 </div>
-                <p className="font-bold text-gray-900 mb-1">{tech.name}</p>
-                <p className="text-sm text-gray-600">{tech.desc}</p>
+                <p className="font-bold text-gray-900 mb-1 text-sm">{tech.name}</p>
+                <p className="text-xs text-gray-600">{tech.desc}</p>
               </div>
             ))}
           </div>
@@ -319,7 +398,14 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-500">
+      <section className="py-20 px-6 bg-gradient-to-r from-blue-600 to-blue-500 relative">
+        {/* Connecting Lines continuing from Tech Stack section */}
+        <div className="absolute top-0 left-4 md:left-10 h-full w-px bg-gradient-to-b from-gray-200 via-blue-400 to-transparent opacity-50 hidden md:block"></div>
+        <div className="absolute top-0 right-4 md:right-10 h-full w-px bg-gradient-to-b from-gray-200 via-blue-400 to-transparent opacity-50 hidden md:block"></div>
+
+        {/* Top Separation Line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent opacity-50"></div>
+
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl xl:text-6xl font-medium tracking-tighter text-white mb-6">
             Ready to Transform Your Payroll?
@@ -347,7 +433,10 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-gray-900 text-gray-400">
+      <footer className="py-12 px-6 bg-gray-900 text-gray-400 relative">
+        {/* Top Separation Line */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
+
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <Image

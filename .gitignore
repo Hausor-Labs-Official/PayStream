@@ -35,4 +35,9 @@ qdrant_storage/
 # Opus workflows (if exported locally)
 workflows/*.json.local
 
+# Build artifacts and temporary files
+deploy.log
+*.csv
+check-apis.sh
+
 .vercel
