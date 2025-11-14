@@ -122,6 +122,7 @@ export default function Home() {
               <span>24/7 AI support</span>
             </div>
           </div>
+          </div>
         </div>
       </section>
 
