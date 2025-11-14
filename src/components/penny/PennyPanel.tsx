@@ -399,9 +399,11 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      if (data.audioUrl || isLiveVoiceMode) {
-        const textToSpeak = assistantMessage.content;
-        speakText(textToSpeak);
+      // Play ElevenLabs audio if available, otherwise use browser TTS
+      if (data.audioUrl) {
+        playElevenLabsAudio(data.audioUrl);
+      } else if (isLiveVoiceMode) {
+        speakText(assistantMessage.content);
       }
     } catch (error) {
       const errorMessage: Message = {
@@ -419,6 +421,27 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
   const handleSuggestionClick = (suggestion: string) => {
     setInput(suggestion);
     setShowSuggestions(false);
+  };
+
+  const playElevenLabsAudio = (audioUrl: string) => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+
+    audio.onplay = () => setIsPlaying(true);
+    audio.onended = () => setIsPlaying(false);
+    audio.onerror = () => {
+      setIsPlaying(false);
+      console.error('Error playing ElevenLabs audio');
+    };
+
+    audio.play().catch(error => {
+      console.error('Failed to play audio:', error);
+      setIsPlaying(false);
+    });
   };
 
   const speakText = (text: string) => {
@@ -448,23 +471,23 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
 
   return (
     <>
-      <div className="fixed right-0 top-0 w-[28rem] h-screen bg-white border-l border-gray-200 shadow-2xl z-30 flex flex-col">
+      <div className="fixed right-0 top-0 w-[28rem] h-screen bg-white border-l border-gray-200 z-30 flex flex-col">
       {/* Header */}
-      <div className="h-16 bg-gradient-to-r from-blue-600 to-indigo-600 border-b border-blue-700 flex items-center justify-between px-4">
+      <div className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <div className="relative">
             <PennyOrb size={40} isSpeaking={isPlaying} preset={7} />
-            <div className={`absolute bottom-0 right-0 w-3 h-3 ${isPlaying ? 'bg-blue-300 animate-pulse' : isLiveVoiceMode ? 'bg-purple-400 animate-pulse' : 'bg-green-400'} rounded-full border-2 border-white shadow-lg`} />
+            <div className={`absolute bottom-0 right-0 w-3 h-3 ${isPlaying ? 'bg-blue-300 animate-pulse' : isLiveVoiceMode ? 'bg-purple-400 animate-pulse' : 'bg-green-400'} rounded-full border-2 border-white`} />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Penny AI</h3>
-            <p className="text-xs text-blue-100">
+            <h3 className="font-semibold text-gray-900">Penny AI</h3>
+            <p className="text-xs text-gray-600">
               {isLiveVoiceMode ? 'Live Voice Active' : 'Payroll Assistant'}
             </p>
           </div>
         </div>
-        <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-          <X className="w-5 h-5 text-white" />
+        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+          <X className="w-5 h-5 text-gray-700" />
         </button>
       </div>
 
@@ -482,7 +505,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                 <button
                   key={index}
                   onClick={() => handleSuggestionClick(suggestion)}
-                  className="px-3 py-2 bg-white hover:bg-blue-50 text-blue-700 rounded-lg text-sm font-medium transition-all hover:shadow-md border border-blue-200 hover:border-blue-300"
+                  className="px-3 py-2 bg-white hover:bg-blue-50 text-blue-700 rounded-lg text-sm font-medium transition-all border border-blue-200 hover:border-blue-300"
                 >
                   {suggestion}
                 </button>
@@ -497,7 +520,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`px-4 py-3 rounded-2xl max-w-[85%] shadow-sm ${
+              className={`px-4 py-3 rounded-2xl max-w-[85%] ${
                 message.role === 'user'
                   ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-tr-sm'
                   : 'bg-white text-gray-900 rounded-tl-sm border border-gray-200'
@@ -595,7 +618,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
                     />
                     <button
                       onClick={() => removeAttachment(index)}
-                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -731,7 +754,7 @@ export default function PennyPanel({ isOpen, onClose }: PennyPanelProps) {
           <button
             onClick={() => handleSend()}
             disabled={(!input.trim() && attachments.length === 0) || isLoading || isRecording || isLiveVoiceMode}
-            className="w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl flex items-center justify-center hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl self-end"
+            className="w-14 h-14 bg-gradient-to-r from-blue-600 to-blue-500 rounded-xl flex items-center justify-center hover:from-blue-700 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed self-end"
             aria-label="Send message"
           >
             <Send className="w-6 h-6 text-white" />
