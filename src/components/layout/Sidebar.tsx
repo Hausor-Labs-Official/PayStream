@@ -97,23 +97,23 @@ export default function Sidebar({ collapsed, onSearchClick }: SidebarProps) {
       <div
         className={cn(
           'fixed left-0 top-0 h-full bg-white border-r border-gray-200 transition-all duration-300 z-40',
-          collapsed ? 'w-16' : 'w-64'
+          collapsed ? 'w-14 sm:w-16' : 'w-56 sm:w-64'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
+        <div className="flex items-center justify-between h-14 sm:h-16 px-2 sm:px-4 border-b border-gray-200">
           {!collapsed && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <Image
                 src="/paystream-logo.svg"
                 alt="Paystream AI"
-                width={32}
-                height={32}
-                className="flex-shrink-0"
+                width={28}
+                height={28}
+                className="flex-shrink-0 sm:w-8 sm:h-8"
               />
-              <div className="flex items-center gap-2">
-                <span className="text-xl font-semibold text-foreground">Paystream AI</span>
-                <span className="px-1.5 py-0.5 text-[10px] font-bold text-[#0044FF] bg-[#EEFF00] rounded-md">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-base sm:text-xl font-semibold text-foreground">Paystream AI</span>
+                <span className="px-1 sm:px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold text-[#0044FF] bg-[#EEFF00] rounded-md">
                   Beta
                 </span>
               </div>
@@ -124,37 +124,38 @@ export default function Sidebar({ collapsed, onSearchClick }: SidebarProps) {
               <Image
                 src="/paystream-logo.svg"
                 alt="Paystream AI"
-                width={32}
-                height={32}
+                width={28}
+                height={28}
+                className="sm:w-8 sm:h-8"
               />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-[#EEFF00] rounded-full border border-white" />
+              <div className="absolute -top-1 -right-1 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-[#EEFF00] rounded-full border border-white" />
             </div>
           )}
         </div>
 
         {/* Navigation */}
-        <nav className="p-2 space-y-1 overflow-y-auto h-[calc(100vh-4rem)]">
+        <nav className="p-1.5 sm:p-2 space-y-1 overflow-y-auto h-[calc(100vh-3.5rem)] sm:h-[calc(100vh-4rem)]">
           {/* Search Button */}
           {collapsed ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   onClick={onSearchClick}
-                  className="flex items-center justify-center h-10 w-full rounded-lg transition-colors text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]"
+                  className="flex items-center justify-center h-9 sm:h-10 w-full rounded-lg transition-colors text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]"
                 >
-                  <Search className="w-4 h-4" />
+                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </button>
               </TooltipTrigger>
               <TooltipContent side="right">
-                <p>Search Employees</p>
+                <p className="text-xs sm:text-sm">Search Employees</p>
               </TooltipContent>
             </Tooltip>
           ) : (
             <button
               onClick={onSearchClick}
-              className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]"
+              className="flex items-center gap-2 sm:gap-3 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]"
             >
-              <Search className="w-4 h-4" />
+              <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               <span className="font-normal">Search</span>
             </button>
           )}
@@ -179,17 +180,17 @@ export default function Sidebar({ collapsed, onSearchClick }: SidebarProps) {
                       <Link
                         href={item.href}
                         className={cn(
-                          'flex items-center justify-center h-10 rounded-lg transition-colors',
+                          'flex items-center justify-center h-9 sm:h-10 rounded-lg transition-colors',
                           isActive || isSubItemActive
                             ? 'bg-[#0044FF] text-white'
                             : 'text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]'
                         )}
                       >
-                        <item.icon className="w-4 h-4" />
+                        <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="right">
-                      <p>{item.name}</p>
+                      <p className="text-xs sm:text-sm">{item.name}</p>
                     </TooltipContent>
                   </Tooltip>
                 ) : (
@@ -199,33 +200,33 @@ export default function Sidebar({ collapsed, onSearchClick }: SidebarProps) {
                       <button
                         onClick={() => toggleExpanded(item.name)}
                         className={cn(
-                          'flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm transition-colors',
+                          'flex items-center gap-2 sm:gap-3 w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors',
                           isActive || isSubItemActive
                             ? 'bg-[#0044FF] text-white'
                             : 'text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]'
                         )}
                       >
-                        <item.icon className="w-4 h-4" />
+                        <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className={cn(isActive || isSubItemActive ? 'font-semibold' : 'font-normal')}>
                           {item.name}
                         </span>
                         {isExpanded ? (
-                          <ChevronDown className="w-4 h-4 ml-auto" />
+                          <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-auto" />
                         ) : (
-                          <ChevronRight className="w-4 h-4 ml-auto" />
+                          <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-auto" />
                         )}
                       </button>
                     ) : (
                       <Link
                         href={item.href}
                         className={cn(
-                          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors',
+                          'flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm transition-colors',
                           isActive
                             ? 'bg-[#0044FF] text-white'
                             : 'text-[#737E9C] hover:bg-[#0044FF] hover:bg-opacity-10 hover:text-[#0044FF]'
                         )}
                       >
-                        <item.icon className="w-4 h-4" />
+                        <item.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className={cn(isActive ? 'font-semibold' : 'font-normal')}>
                           {item.name}
                         </span>
