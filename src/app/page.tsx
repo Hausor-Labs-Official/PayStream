@@ -124,9 +124,6 @@ export default function Home() {
                 </button>
               </Link>
             </SignedIn>
-            <button className="h-10 flex items-center justify-center px-6 text-sm font-normal tracking-wide text-gray-900 rounded-full transition-all ease-out active:scale-95 bg-white border border-gray-200 hover:bg-gray-50 shadow-sm">
-              Watch Demo
-            </button>
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="h-10 flex items-center justify-center px-6 text-sm font-normal tracking-wide text-gray-900 rounded-full transition-all ease-out active:scale-95 bg-white border border-gray-200 hover:bg-gray-50">
@@ -350,17 +347,17 @@ export default function Home() {
               {
                 name: 'Arc Blockchain',
                 desc: 'Payment Network',
-                logoUrl: 'https://www.circle.com/hs-fs/hubfs/Circle_Logo.png'
+                logoUrl: 'https://cdn.prod.website-files.com/685311a976e7c248b5dfde95/688f6e47eca8d8e359537b5f_logo-ondark.svg'
               },
               {
                 name: 'Circle USDC',
                 desc: 'Stablecoin',
-                logoUrl: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.png'
+                logoUrl: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn2.hubspot.net%2Fhubfs%2F6778953%2FCircle%2520logo%25202020%2Flogo%402x.png&f=1&nofb=1&ipt=1e03e4bbbdd93b82f91669f6c3c352fcb55a7e1869bc0de2426399548877e529'
               },
               {
                 name: 'Qdrant',
                 desc: 'Vector Search',
-                logoUrl: 'https://qdrant.tech/img/logo_with_text.png'
+                logoUrl: 'https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Favatars.githubusercontent.com%2Fu%2F73504361%3Fv%3D4&f=1&nofb=1&ipt=193df94201359696a6101d425f02d6d673fcaa22d35f0a0cd3bea0ac49b2fc1d'
               },
               {
                 name: 'AI/ML API',
