@@ -1,0 +1,122 @@
+{
+  "faqs": [
+    {
+      "id": "what-is-paystream",
+      "question": "What is Paystream AI?",
+      "answer": "Paystream AI is an intelligent payroll management platform that leverages blockchain technology and artificial intelligence. We enable instant USDC payments on the Arc blockchain, automated payroll processing, and AI-powered workforce insights through our assistant, Penny.",
+      "category": "general",
+      "tags": ["overview", "platform", "features"]
+    },
+    {
+      "id": "how-penny-works",
+      "question": "How does Penny AI work?",
+      "answer": "Penny is your intelligent payroll assistant powered by Google Gemini 2.0 and Groq LLaMA. She can search employees semantically using Qdrant vector database, analyze payment history, answer questions about your workforce, and even communicate via voice using ElevenLabs text-to-speech.",
+      "category": "penny",
+      "tags": ["ai", "assistant", "features"]
+    },
+    {
+      "id": "blockchain-payments",
+      "question": "How do blockchain payments work?",
+      "answer": "We use Arc blockchain and Circle USDC for instant, low-cost payments. When you execute payroll, our smart contract (BatchPayer) distributes USDC to employee wallets in a single transaction. Payments are confirmed in seconds, not days like traditional banking.",
+      "category": "payments",
+      "tags": ["blockchain", "arc", "usdc", "circle"]
+    },
+    {
+      "id": "getting-started",
+      "question": "How do I get started?",
+      "answer": "Simply sign up for an account, add your employees with their wallet addresses, and fund your deployer wallet with USDC. You can then execute payroll with a single click. We handle all the blockchain complexity behind the scenes.",
+      "category": "onboarding",
+      "tags": ["signup", "setup", "start"]
+    },
+    {
+      "id": "security",
+      "question": "Is Paystream secure?",
+      "answer": "Absolutely. We use Clerk for enterprise-grade authentication, Circle for regulated USDC wallets, and Arc blockchain for transparent, immutable payment records. All employee data is encrypted, and smart contracts are audited for security.",
+      "category": "security",
+      "tags": ["security", "encryption", "compliance"]
+    },
+    {
+      "id": "pricing",
+      "question": "What does Paystream cost?",
+      "answer": "We offer flexible pricing based on your team size. Contact our sales team for a custom quote. The platform includes unlimited AI queries with Penny, semantic search, voice interactions, and automated payroll workflows.",
+      "category": "pricing",
+      "tags": ["cost", "pricing", "plans"]
+    },
+    {
+      "id": "wallet-creation",
+      "question": "How are employee wallets created?",
+      "answer": "We integrate with Circle's Developer Wallets API to automatically create USDC wallets for your employees. Each wallet is secured with Circle's infrastructure and can receive payments instantly on the Arc blockchain.",
+      "category": "wallets",
+      "tags": ["circle", "wallets", "setup"]
+    },
+    {
+      "id": "semantic-search",
+      "question": "What is semantic employee search?",
+      "answer": "Our semantic search uses Qdrant vector database to understand natural language queries. Instead of exact keyword matching, you can ask 'Find blockchain developers' or 'Who speaks Spanish?' and get relevant results based on meaning and context.",
+      "category": "features",
+      "tags": ["search", "qdrant", "ai"]
+    },
+    {
+      "id": "voice-ai",
+      "question": "Can I talk to Penny?",
+      "answer": "Yes! Penny supports voice interactions powered by ElevenLabs. You can ask questions verbally and receive spoken responses. This is especially useful for hands-free payroll management and quick employee lookups.",
+      "category": "penny",
+      "tags": ["voice", "elevenlabs", "ai"]
+    },
+    {
+      "id": "payment-tracking",
+      "question": "How do I track payments?",
+      "answer": "Every payment is recorded on the Arc blockchain with a transaction hash. You can view payment history in the dashboard, including amounts, timestamps, block confirmations, and gas fees. All records are immutable and verifiable.",
+      "category": "payments",
+      "tags": ["tracking", "history", "blockchain"]
+    },
+    {
+      "id": "integrations",
+      "question": "What integrations does Paystream support?",
+      "answer": "Paystream integrates with Google Gemini 2.0 for AI, Qdrant for semantic search, Circle for USDC wallets, Arc blockchain for payments, Groq for fast inference, ElevenLabs for voice, and Opus for workflow automation.",
+      "category": "integrations",
+      "tags": ["api", "integrations", "platforms"]
+    },
+    {
+      "id": "support",
+      "question": "How do I get support?",
+      "answer": "You can ask Penny anything directly in the dashboard, or reach out to our support team via email. We also have comprehensive API documentation and integration guides for developers.",
+      "category": "support",
+      "tags": ["help", "contact", "support"]
+    }
+  ],
+  "quickPrompts": [
+    {
+      "id": "overview",
+      "text": "What is Paystream AI?",
+      "icon": "info"
+    },
+    {
+      "id": "getting-started",
+      "text": "How do I get started?",
+      "icon": "rocket"
+    },
+    {
+      "id": "blockchain",
+      "text": "How do blockchain payments work?",
+      "icon": "link"
+    },
+    {
+      "id": "penny",
+      "text": "Tell me about Penny AI",
+      "icon": "sparkles"
+    },
+    {
+      "id": "security",
+      "text": "Is Paystream secure?",
+      "icon": "shield"
+    },
+    {
+      "id": "pricing",
+      "text": "How much does it cost?",
+      "icon": "dollar-sign"
+    }
+  ],
+  "greeting": "Hi! I'm Penny, your AI payroll assistant. I'm here to answer any questions about Paystream AI. What would you like to know?",
+  "fallbackResponse": "That's a great question! While I'm focused on helping with Paystream AI FAQs, I'd recommend checking our documentation or contacting our support team for more specific inquiries. Is there anything else about Paystream I can help you with?"
+}

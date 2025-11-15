@@ -22,6 +22,7 @@ import {
   BarChart3,
   Globe2
 } from 'lucide-react';
+import PennyFAQ from '@/components/landing/PennyFAQ';
 
 export default function Home() {
   return (
@@ -453,6 +454,9 @@ export default function Home() {
           </p>
         </div>
       </footer>
+
+      {/* Penny FAQ Chatbot */}
+      <PennyFAQ />
     </main>
   );
 }
