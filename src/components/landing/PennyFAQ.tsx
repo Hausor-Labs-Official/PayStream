@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, X, Send, Sparkles } from 'lucide-react';
+import { X, Send, Sparkles } from 'lucide-react';
+import { useRive, useStateMachineInput, Layout, Fit, Alignment } from '@rive-app/react-webgl2';
 import { Button } from '@/components/ui/button';
 import faqData from '@/data/penny-faq.json';
 
@@ -17,7 +18,28 @@ export default function PennyFAQ() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [showLabel, setShowLabel] = useState(true);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Rive animation setup
+  const stateMachine = 'default';
+  const { rive, RiveComponent } = useRive({
+    src: '/elements/orb-1.2.riv',
+    stateMachines: stateMachine,
+    autoplay: true,
+    layout: new Layout({
+      fit: Fit.Cover,
+      alignment: Alignment.Center,
+    }),
+  });
+
+  const speakingInput = useStateMachineInput(rive, stateMachine, 'speaking');
+  const colorInput = useStateMachineInput(rive, stateMachine, 'color');
+
+  useEffect(() => {
+    if (speakingInput) speakingInput.value = isSpeaking;
+    if (colorInput) colorInput.value = 7; // PENNY COLOR #7
+  }, [isSpeaking, speakingInput, colorInput]);
 
   // Show label periodically
   useEffect(() => {
@@ -106,6 +128,10 @@ export default function PennyFAQ() {
         timestamp: new Date(),
       };
       setMessages((prev) => [...prev, pennyMessage]);
+
+      // Trigger speaking animation
+      setIsSpeaking(true);
+      setTimeout(() => setIsSpeaking(false), 2000);
     }, 500);
   };
 
@@ -130,26 +156,10 @@ export default function PennyFAQ() {
         {/* Orb Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="relative w-16 h-16 rounded-full bg-gradient-to-br from-[#0044FF] to-[#0033CC] shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 group"
+          className="w-16 h-16 transition-all duration-300 hover:scale-110"
           aria-label="Chat with Penny"
         >
-          {/* Animated rings */}
-          <div className="absolute inset-0 rounded-full bg-[#0044FF] opacity-20 animate-ping" />
-          <div className="absolute inset-0 rounded-full bg-[#0044FF] opacity-30 animate-pulse" />
-
-          {/* Icon */}
-          <div className="relative flex items-center justify-center w-full h-full">
-            {isOpen ? (
-              <X className="w-7 h-7 text-white" />
-            ) : (
-              <Sparkles className="w-7 h-7 text-white" />
-            )}
-          </div>
-
-          {/* Notification badge */}
-          {!isOpen && (
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white" />
-          )}
+          <RiveComponent className="w-full h-full" />
         </button>
       </div>
 
@@ -159,10 +169,8 @@ export default function PennyFAQ() {
           {/* Header */}
           <div className="bg-gradient-to-r from-[#0044FF] to-[#0033CC] p-4 rounded-t-2xl">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
+              <div className="relative w-12 h-12">
+                <RiveComponent className="w-full h-full" />
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white" />
               </div>
               <div>
