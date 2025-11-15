@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X, Send, Sparkles } from 'lucide-react';
-import { useRive, useStateMachineInput, Layout, Fit, Alignment } from '@rive-app/react-webgl2';
+import { useRive, useStateMachineInput, Layout, Fit, Alignment } from '@rive-app/react-canvas';
 import { Button } from '@/components/ui/button';
 import faqData from '@/data/penny-faq.json';
 
