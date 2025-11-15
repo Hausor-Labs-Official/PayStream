@@ -27,11 +27,12 @@ export default function DashboardLayout({
       </div>
 
       {/* Main Content Area with Topbar */}
-      <div className="flex-1 transition-all duration-300" style={{
-        marginLeft: pennyOpen ? '3.5rem' : (sidebarCollapsed ? '3.5rem' : '14rem'),
-        marginRight: pennyOpen ? '20rem' : '0'
-      }}
-      className="sm:!ml-[4rem] sm:!mr-0 md:!ml-[16rem] md:!mr-0"
+      <div
+        className="flex-1 transition-all duration-300"
+        style={{
+          marginLeft: pennyOpen ? '3.5rem' : (sidebarCollapsed ? '3.5rem' : '14rem'),
+          marginRight: pennyOpen ? '20rem' : '0'
+        }}
       >
         {/* Fixed Topbar - Beside sidebar, not over it */}
         <div className="sticky top-0 z-30 bg-white">
