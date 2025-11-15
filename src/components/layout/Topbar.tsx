@@ -1,7 +1,7 @@
 'use client';
 
-import { PanelLeft, User, ChevronDown } from 'lucide-react';
-import { useUser, UserButton } from '@clerk/nextjs';
+import { PanelLeft, User, ChevronDown, Settings, LogOut, UserCircle } from 'lucide-react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,8 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import WalletConnect from '@/components/wallet/WalletConnect';
+import { useRouter } from 'next/navigation';
+import toast from 'react-hot-toast';
 
 interface TopbarProps {
   onToggleSidebar?: () => void;
@@ -20,6 +22,19 @@ interface TopbarProps {
 
 export default function Topbar({ onToggleSidebar }: TopbarProps) {
   const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+      router.push('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast.error('Failed to sign out');
+    }
+  };
 
   return (
     <div className="h-16 bg-white border-b border-gray-200 sticky top-0 z-50 px-6">
@@ -40,45 +55,68 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           {isLoaded && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="gap-2">
-                  <Avatar className="w-8 h-8">
+                <Button
+                  variant="ghost"
+                  className="gap-2 h-10 px-3 hover:bg-gray-100 transition-colors"
+                >
+                  <Avatar className="w-8 h-8 ring-2 ring-gray-200">
                     <AvatarImage src={user.imageUrl} alt={user.fullName || 'User'} />
                     <AvatarFallback className="bg-[#0044FF] text-white text-sm font-semibold">
                       {user.firstName?.[0]}{user.lastName?.[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <ChevronDown className="w-4 h-4" />
+                  <div className="hidden md:flex flex-col items-start">
+                    <span className="text-sm font-medium leading-none">
+                      {user.firstName || 'User'}
+                    </span>
+                    <span className="text-xs text-muted-foreground leading-none mt-1">
+                      {user.primaryEmailAddress?.emailAddress?.split('@')[0]}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-semibold leading-none">
-                      {user.fullName || 'User'}
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-none">
-                      {user.primaryEmailAddress?.emailAddress}
-                    </p>
+              <DropdownMenuContent align="end" className="w-64">
+                <DropdownMenuLabel className="pb-3">
+                  <div className="flex items-center gap-3">
+                    <Avatar className="w-10 h-10 ring-2 ring-gray-200">
+                      <AvatarImage src={user.imageUrl} alt={user.fullName || 'User'} />
+                      <AvatarFallback className="bg-[#0044FF] text-white font-semibold">
+                        {user.firstName?.[0]}{user.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-semibold leading-none">
+                        {user.fullName || 'User'}
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-none">
+                        {user.primaryEmailAddress?.emailAddress}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
+
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="w-4 h-4 mr-2" />
-                  Profile
+
+                <DropdownMenuItem className="cursor-pointer">
+                  <UserCircle className="w-4 h-4 mr-2 text-gray-600" />
+                  <span>View Profile</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="w-4 h-4 mr-2 text-gray-600" />
+                  <span>Account Settings</span>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
-                <div className="px-2 py-1.5">
-                  <UserButton
-                    afterSignOutUrl="/"
-                    appearance={{
-                      elements: {
-                        rootBox: 'w-full',
-                        userButtonBox: 'w-full',
-                      },
-                    }}
-                  />
-                </div>
+
+                <DropdownMenuItem
+                  onClick={handleSignOut}
+                  className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  <span>Sign Out</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
