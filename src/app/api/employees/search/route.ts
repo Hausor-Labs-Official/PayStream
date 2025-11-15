@@ -15,24 +15,31 @@ async function fallbackSearch(query: string, limit: number) {
   const { data: employees, error } = await supabase
     .from('employees')
     .select('*')
-    .or(`name.ilike.%${lowerQuery}%,email.ilike.%${lowerQuery}%,role.ilike.%${lowerQuery}%,department.ilike.%${lowerQuery}%`)
+    .or(`name.ilike.%${lowerQuery}%,email.ilike.%${lowerQuery}%`)
     .limit(limit);
 
   if (error) throw error;
 
-  return employees?.map((emp, index) => ({
-    employee: {
-      id: emp.id,
-      name: emp.name,
-      email: emp.email,
-      role: emp.role,
-      department: emp.department,
-      skills: [],
-      walletAddress: emp.wallet_address,
-    },
-    score: 0.8 - (index * 0.05), // Mock scores
-    relevance: 'medium' as const,
-  })) || [];
+  // Extract role from name if it contains " - "
+  return employees?.map((emp, index) => {
+    const nameParts = emp.name.split(' - ');
+    const displayName = nameParts[0] || emp.name;
+    const role = nameParts[1] || '';
+
+    return {
+      employee: {
+        id: emp.id,
+        name: displayName,
+        email: emp.email,
+        role: role,
+        department: '',
+        skills: [],
+        walletAddress: emp.wallet_address,
+      },
+      score: 0.8 - (index * 0.05), // Mock scores
+      relevance: 'medium' as const,
+    };
+  }) || [];
 }
 
 /**
@@ -160,21 +167,7 @@ export async function POST(request: NextRequest) {
           filter: filters,
         });
 
-        // Filter results by additional criteria if provided
-        let filteredResults = searchResults;
-        if (filters) {
-          filteredResults = searchResults.filter((r) => {
-            if (filters.department && r.payload.department !== filters.department) {
-              return false;
-            }
-            if (filters.role && r.payload.role !== filters.role) {
-              return false;
-            }
-            return true;
-          });
-        }
-
-        results = filteredResults.map((r) => ({
+        results = searchResults.map((r) => ({
           employee: {
             id: r.payload.employeeId,
             name: r.payload.name,
@@ -191,37 +184,11 @@ export async function POST(request: NextRequest) {
         console.warn('Vector search failed, falling back to database search:', error);
         results = await fallbackSearch(query, limit);
         searchMethod = 'fallback';
-
-        // Apply filters in fallback mode
-        if (filters) {
-          results = results.filter((r) => {
-            if (filters.department && r.employee.department !== filters.department) {
-              return false;
-            }
-            if (filters.role && r.employee.role !== filters.role) {
-              return false;
-            }
-            return true;
-          });
-        }
       }
     } else {
       console.warn('Qdrant unavailable, using fallback search');
       results = await fallbackSearch(query, limit);
       searchMethod = 'fallback';
-
-      // Apply filters in fallback mode
-      if (filters) {
-        results = results.filter((r) => {
-          if (filters.department && r.employee.department !== filters.department) {
-            return false;
-          }
-          if (filters.role && r.employee.role !== filters.role) {
-            return false;
-          }
-          return true;
-        });
-      }
     }
 
     return NextResponse.json({
